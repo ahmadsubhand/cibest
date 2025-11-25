@@ -9,4 +9,33 @@ class PendapatanKetenagakerjaanSection extends Model
 {
     /** @use HasFactory<\Database\Factories\PendapatanKetenagakerjaanSectionFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'cibest_form_id',
+        'nama_anggota',
+        'status_pekerjaan_option_id',
+        'jenis_pekerjaan_option_id',
+        'rata_rata_pendapatan',
+        'pendapatan_tidak_tetap',
+        'pendapatan_aset',
+        'total_pendapatan',
+    ];
+
+    // --- Kembali ke form induk
+    public function cibestForm()
+    {
+        return $this->belongsTo(CibestForm::class);
+    }
+
+    // --- Status Pekerjaan (single select)
+    public function statusPekerjaanOption()
+    {
+        return $this->belongsTo(StatusPekerjaanOption::class);
+    }
+
+    // --- Jenis Pekerjaan (single select)
+    public function jenisPekerjaanOption()
+    {
+        return $this->belongsTo(JenisPekerjaanOption::class);
+    }
 }

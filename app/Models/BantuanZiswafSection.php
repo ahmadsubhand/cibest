@@ -9,4 +9,55 @@ class BantuanZiswafSection extends Model
 {
     /** @use HasFactory<\Database\Factories\BantuanZiswafSectionFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'bulan_tahun_menerima',
+        'frekuensi_penerimaan',
+        'total_nilai_bantuan',
+        'ziswaf_bantuan_konsumtif_section_id',
+        'ziswaf_bantuan_produktif_section_id',
+    ];
+
+    // --- Kembali ke CibestForm
+    // (Karena CibestForm punya bantuan_ziswaf_section_id)
+    public function cibestForm()
+    {
+        return $this->belongsTo(CibestForm::class);
+    }
+
+    // --- Konsumtif (one-to-one)
+    public function ziswafBantuanKonsumtifSection()
+    {
+        return $this->hasOne(ZiswafBantuanKonsumtifSection::class);
+    }
+
+    // --- Produktif (one-to-one)
+    public function ziswafBantuanProduktifSection()
+    {
+        return $this->hasOne(ZiswafBantuanProduktifSection::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECKBOX RELATIONSHIPS (Many-to-Many)
+    |--------------------------------------------------------------------------
+    */
+
+    // --- Lembaga ZISWAF (checkbox)
+    public function lembagaZiswafCheckboxes()
+    {
+        return $this->belongsToMany(LembagaZiswafCheckbox::class);
+    }
+
+    // --- Program Bantuan (checkbox)
+    public function programBantuanCheckboxes()
+    {
+        return $this->belongsToMany(ProgramBantuanCheckbox::class);
+    }
+
+    // --- Pembiayaan Lain (checkbox)
+    public function pembiayaanLainCheckboxes()
+    {
+        return $this->belongsToMany(PembiayaanLainCheckbox::class);
+    }
 }
