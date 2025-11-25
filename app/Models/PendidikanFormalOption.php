@@ -9,4 +9,11 @@ class PendidikanFormalOption extends Model
 {
     /** @use HasFactory<\Database\Factories\PendidikanFormalOptionFactory> */
     use HasFactory;
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 }

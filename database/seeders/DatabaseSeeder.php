@@ -15,13 +15,26 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => 'password',
-                'email_verified_at' => now(),
-            ]
-        );
+        $this->call([
+            UserSeeder::class,
+            AkadPembiayaanOptionSeeder::class,
+            FrekuensiPendampinganOptionSeeder::class,
+            JangkaWaktuOptionSeeder::class,
+            JenisKelaminOptionSeeder::class,
+            JenisPekerjaanOptionSeeder::class,
+            JenisPelatihanCheckboxSeeder::class,
+            KeteranganKebijakanPemerintahLikertSeeder::class,
+            KeteranganLingkunganKeluargaLikertSeeder::class,
+            KeteranganPuasaLikertSeeder::class,
+            KeteranganShalatLikertSeeder::class,
+            KeteranganZakatInfakLikertSeeder::class,
+            LembagaZiswafCheckboxSeeder::class,
+            PembiayaanLainCheckboxSeeder::class,
+            PendidikanFormalOptionSeeder::class,
+            PendidikanNonformalOptionSeeder::class,
+            ProgramBantuanCheckboxSeeder::class,
+            StatusPekerjaanOptionSeeder::class,
+            StatusPerkawinanOptionSeeder::class,
+        ]);
     }
 }

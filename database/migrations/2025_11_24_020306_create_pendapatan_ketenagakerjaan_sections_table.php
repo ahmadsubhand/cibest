@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('pendapatan_ketenagakerjaan_sections', function (Blueprint $table) {
             $table->id();
+            $table->timestamps();
             $table->foreignId('cibest_form_id')->constrained();
-
+            
             $table->string('nama_anggota');
             $table->foreignId('status_pekerjaan_option_id')->constrained();
             $table->foreignId('jenis_pekerjaan_option_id')->constrained();

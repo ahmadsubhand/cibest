@@ -9,4 +9,11 @@ class JenisPekerjaanOption extends Model
 {
     /** @use HasFactory<\Database\Factories\JenisPekerjaanOptionFactory> */
     use HasFactory;
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 }

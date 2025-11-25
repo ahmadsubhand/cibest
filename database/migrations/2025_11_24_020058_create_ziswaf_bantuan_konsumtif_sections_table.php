@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('ziswaf_bantuan_konsumtif_sections', function (Blueprint $table) {
             $table->id();
+            $table->timestamps();
+            
             $table->bigInteger('pangan')->default(0);
             $table->bigInteger('kesehatan')->default(0);
             $table->bigInteger('pendidikan')->default(0);

@@ -9,4 +9,11 @@ class KeteranganZakatInfakLikert extends Model
 {
     /** @use HasFactory<\Database\Factories\KeteranganZakatInfakLikertFactory> */
     use HasFactory;
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 }

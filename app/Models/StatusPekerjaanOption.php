@@ -9,4 +9,11 @@ class StatusPekerjaanOption extends Model
 {
     /** @use HasFactory<\Database\Factories\StatusPekerjaanOptionFactory> */
     use HasFactory;
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 }

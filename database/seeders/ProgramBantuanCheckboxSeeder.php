@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ProgramBantuanCheckbox;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,18 @@ class ProgramBantuanCheckboxSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        ProgramBantuanCheckbox::factory()->createMany([
+            ['value' => 'Zakat Community Development (ZCD)', 'is_other' => false],
+            ['value' => 'BAZNAS Micro Finance (BMFi)', 'is_other' => false],
+            ['value' => 'Lembaga Pemberdayaan Ekonomi Mustahik (LPEM)', 'is_other' => false],
+            ['value' => 'Layanan Aktif BAZNAS (LAB)', 'is_other' => false],
+            ['value' => 'Lembaga Beasiswa BAZNAS (LBB)', 'is_other' => false],
+            ['value' => 'Sekolah Cendekia BAZNAS', 'is_other' => false],
+            ['value' => 'BAZNAS Tanggap Bencana (BTB)', 'is_other' => false],
+            ['value' => 'Mualaf Center BAZNAS (MCB)', 'is_other' => false],
+            ['value' => 'Rumah Sehat BAZNAS (RSB)', 'is_other' => false],
+            ['value' => 'Layanan Publik', 'is_other' => false],
+            ['value' => 'Lembaga Pemberdayaan Peternak Mustahik (LPPM)', 'is_other' => false],
+        ]);
     }
 }
