@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             ProgramBantuanCheckboxSeeder::class,
             StatusPekerjaanOptionSeeder::class,
             StatusPerkawinanOptionSeeder::class,
+            PenggunaanPembiayaanCheckboxSeeder::class,
         ]);
     }
 }
