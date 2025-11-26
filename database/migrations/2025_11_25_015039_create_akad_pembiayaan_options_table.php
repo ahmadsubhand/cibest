@@ -17,10 +17,10 @@ return new class extends Migration
             $table->boolean('is_other')->default(true);
         });
 
-        Schema::create('akad_pembiayaan_option_pembiayaan_syariah_section', function (Blueprint $table) {
+        Schema::create('akad_pembiayaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembiayaan_syariah_section_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('akad_pembiayaan_option_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('pembiayaan_syariah_section_id')->constrained('pembiayaan_syariah_sections')->cascadeOnDelete();
+            $table->foreignId('akad_pembiayaan_option_id')->constrained('akad_pembiayaan_options')->cascadeOnDelete();
         });
     }
 

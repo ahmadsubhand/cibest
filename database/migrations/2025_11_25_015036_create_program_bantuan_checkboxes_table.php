@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('penggunaan_pembiayaan_checkboxes', function (Blueprint $table) {
+        Schema::create('program_bantuan_checkboxes', function (Blueprint $table) {
             $table->id();
             $table->string('value');
             $table->boolean('is_other')->default(true);
         });
 
-         Schema::create('pembiayaan_syariah_section_penggunaan_pembiayaan_checkbox', function (Blueprint $table) {
+        Schema::create('bantuan_program', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembiayaan_syariah_section_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('penggunaan_pembiayaan_checkbox_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('bantuan_id')->constrained('bantuan_ziswaf_sections')->cascadeOnDelete();
+            $table->foreignId('program_id')->constrained('program_bantuan_checkboxes')->cascadeOnDelete();
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('penggunaan_pembiayaan_checkboxes');
+        Schema::dropIfExists('program_bantuan_checkboxes');
     }
 };

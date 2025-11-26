@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ZiswafBantuanProduktifSection extends Model
+class BantuanProduktifSection extends Model
 {
-    /** @use HasFactory<\Database\Factories\ZiswafBantuanProduktifSectionFactory> */
+    /** @use HasFactory<\Database\Factories\BantuanProduktifSectionFactory> */
     use HasFactory;
 }

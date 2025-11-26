@@ -17,16 +17,16 @@ return new class extends Migration
             $table->boolean('is_other')->default(true);
         });
 
-        Schema::create('jenis_pelatihan_checkbox_pembinaan_pendampingan_section', function (Blueprint $table) {
+        Schema::create('jenis_pembinaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembinaan_pendampingan_section_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('jenis_pelatihan_checkbox_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('pembinaan_id')->constrained('pembinaan_pendampingan_sections')->cascadeOnDelete();
+            $table->foreignId('jenis_id')->constrained('jenis_pelatihan_checkboxes')->cascadeOnDelete();
         });
 
-        Schema::create('pelatihan_sangat_membantu_checkbox_pembinaan_pendampingan_section', function (Blueprint $table) {
+        Schema::create('pelatihan_pembinaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pembinaan_pendampingan_section_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('jenis_pelatihan_checkbox_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('pembinaan_id')->constrained('pembinaan_pendampingan_sections')->cascadeOnDelete();
+            $table->foreignId('jenis_id')->constrained('jenis_pelatihan_checkboxes')->cascadeOnDelete();
         });
     }
 

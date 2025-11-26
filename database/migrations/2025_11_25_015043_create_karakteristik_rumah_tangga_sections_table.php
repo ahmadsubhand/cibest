@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('nama_anggota');
             $table->string('hubungan_kepala_keluarga');
             $table->integer('usia');
-            $table->foreignId('jenis_kelamin_option_id')->constrained();
-            $table->foreignId('status_perkawinan_option_id')->constrained();
-            $table->foreignId('pendidikan_formal_option_id')->constrained();
-            $table->foreignId('pendidikan_non_formal_option_id')->constrained();
+            $table->foreignId('jenis_kelamin_id')->constrained('jenis_kelamin_options');
+            $table->foreignId('status_perkawinan_id')->constrained('status_perkawinan_options');
+            $table->foreignId('pendidikan_formal_id')->constrained('pendidikan_formal_options');
+            $table->foreignId('pendidikan_non_id')->constrained('pendidikan_nonformal_options');
         });
     }
 

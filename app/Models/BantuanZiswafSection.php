@@ -28,13 +28,13 @@ class BantuanZiswafSection extends Model
     // --- Konsumtif (one-to-one)
     public function ziswafBantuanKonsumtifSection()
     {
-        return $this->hasOne(ZiswafBantuanKonsumtifSection::class);
+        return $this->hasOne(BantuanKonsumtifSection::class);
     }
 
     // --- Produktif (one-to-one)
     public function ziswafBantuanProduktifSection()
     {
-        return $this->hasOne(ZiswafBantuanProduktifSection::class);
+        return $this->hasOne(BantuanProduktifSection::class);
     }
 
     /*

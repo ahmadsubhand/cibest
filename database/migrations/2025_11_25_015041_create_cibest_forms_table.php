@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('cibest_forms', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained();
             $table->timestamps();
 
             $table->string('nama_enumerator');
@@ -33,7 +34,7 @@ return new class extends Migration
             $table->foreignId('pendidikan_formal_option_id')->constrained();
             $table->foreignId('pendidikan_nonformal_option_id')->constrained();
             $table->boolean('memiliki_usaha_sendiri');
-            $table->bigInteger('rata_rata_profit');
+            $table->bigInteger('rata_rata_profit')->default(0);
 
             // II. INFORMASI BANTUAN ZISWAF YANG DIPEROLEH MUSTAHIK
             $table->foreignId('bantuan_ziswaf_section_id')->nullable()->unique()->constrained();
@@ -77,17 +78,17 @@ return new class extends Migration
             $table->boolean('memiliki_simpanan_rumah');
 
             // VIII. DIMENSI SPIRITUAL 
-            $table->foreignId('shalat_sebelum')->constrained('keterangan_shalat_likert');
-            $table->foreignId('puasa_sebelum')->constrained('keterangan_puasa_likert');
-            $table->foreignId('zakat_infak_sebelum')->constrained('keterangan_zakat_infak_likert');
-            $table->foreignId('lingkungan_keluarga_sebelum')->constrained('keterangan_lingkungan_keluarga_likert');
-            $table->foreignId('kebijakan_pemerintah_sebelum')->constrained('keterangan_kebijakan_pemerintah_likert');
+            $table->foreignId('shalat_sebelum')->constrained('keterangan_shalat_likerts');
+            $table->foreignId('puasa_sebelum')->constrained('keterangan_puasa_likerts');
+            $table->foreignId('zakat_infak_sebelum')->constrained('keterangan_zakat_infak_likerts');
+            $table->foreignId('lingkungan_keluarga_sebelum')->constrained('keterangan_lingkungan_keluarga_likerts');
+            $table->foreignId('kebijakan_pemerintah_sebelum')->constrained('keterangan_kebijakan_pemerintah_likerts');
 
-            $table->foreignId('shalat_setelah')->constrained('keterangan_shalat_likert');
-            $table->foreignId('puasa_setelah')->constrained('keterangan_puasa_likert');
-            $table->foreignId('zakat_infak_setelah')->constrained('keterangan_zakat_infak_likert');
-            $table->foreignId('lingkungan_keluarga_setelah')->constrained('keterangan_lingkungan_keluarga_likert');
-            $table->foreignId('kebijakan_pemerintah_setelah')->constrained('keterangan_kebijakan_pemerintah_likert');
+            $table->foreignId('shalat_setelah')->constrained('keterangan_shalat_likerts');
+            $table->foreignId('puasa_setelah')->constrained('keterangan_puasa_likerts');
+            $table->foreignId('zakat_infak_setelah')->constrained('keterangan_zakat_infak_likerts');
+            $table->foreignId('lingkungan_keluarga_setelah')->constrained('keterangan_lingkungan_keluarga_likerts');
+            $table->foreignId('kebijakan_pemerintah_setelah')->constrained('keterangan_kebijakan_pemerintah_likerts');
 
             // IX PEMBINAAN DAN PENDAMPINGAN
             $table->foreignId('pembinaan_pendampingan_section_id')->nullable()->unique()->constrained();

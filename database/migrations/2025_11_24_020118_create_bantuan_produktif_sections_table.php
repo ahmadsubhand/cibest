@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pembinaan_pendampingan_sections', function (Blueprint $table) {
+        Schema::create('bantuan_produktif_sections', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            
-            $table->foreignId('frekuensi_pendampingan_option_id')->constrained();
-            $table->boolean('pembinaan_spiritual');
-            $table->boolean('pembinaan_usaha');
-            $table->boolean('pendampingan_rutin');
+
+            $table->bigInteger('modal_usaha')->default(0);
+            $table->bigInteger('peralatan_usaha')->default(0);
+            $table->bigInteger('lainnya')->default(0);
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pembinaan_pendampingan_sections');
+        Schema::dropIfExists('ziswaf_bantuan_produktif_sections');
     }
 };

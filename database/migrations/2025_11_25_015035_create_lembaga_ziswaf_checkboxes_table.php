@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('program_bantuan_checkboxes', function (Blueprint $table) {
+        Schema::create('lembaga_ziswaf_checkboxes', function (Blueprint $table) {
             $table->id();
             $table->string('value');
             $table->boolean('is_other')->default(true);
         });
 
-        Schema::create('bantuan_ziswaf_section_program_bantuan_checkbox', function (Blueprint $table) {
+        Schema::create('bantuan_lembaga', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bantuan_ziswaf_section_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('program_bantuan_checkbox_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('bantuan_id')->constrained('bantuan_ziswaf_sections')->cascadeOnDelete();
+            $table->foreignId('lembaga_id')->constrained('lembaga_ziswaf_checkboxes')->cascadeOnDelete();
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('program_bantuan_checkboxes');
+        Schema::dropIfExists('lembaga_ziswaf_checkboxes');
     }
 };

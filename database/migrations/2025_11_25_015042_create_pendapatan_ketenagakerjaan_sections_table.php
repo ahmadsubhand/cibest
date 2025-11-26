@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('cibest_form_id')->constrained();
             
             $table->string('nama_anggota');
-            $table->foreignId('status_pekerjaan_option_id')->constrained();
-            $table->foreignId('jenis_pekerjaan_option_id')->constrained();
+            $table->foreignId('status_id')->constrained('status_pekerjaan_options');
+            $table->foreignId('jenis_id')->constrained('jenis_pekerjaan_options');
             $table->bigInteger('rata_rata_pendapatan')->default(0);
             $table->bigInteger('pendapatan_tidak_tetap')->default(0);
             $table->bigInteger('pendapatan_aset')->default(0);
