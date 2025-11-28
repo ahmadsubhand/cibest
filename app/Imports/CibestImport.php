@@ -2,7 +2,6 @@
 
 namespace App\Imports;
 
-use App\Models\CibestForm;
 use App\Models\JenisKelaminOption;
 use App\Models\KeteranganKebijakanPemerintahLikert;
 use App\Models\KeteranganLingkunganKeluargaLikert;
@@ -12,20 +11,259 @@ use App\Models\KeteranganZakatInfakLikert;
 use App\Models\PendidikanFormalOption;
 use App\Models\PendidikanNonformalOption;
 use App\Models\StatusPerkawinanOption;
+use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
-use phpDocumentor\Reflection\Types\This;
-use Throwable;
 
 HeadingRowFormatter::default('none');
 
-class CibestImport implements ToModel, WithHeadingRow
-{
-    private function getOptionId(string $model, string|null $value, string $columnName)
+class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsOnFailure, SkipsEmptyRows
+{   
+    use Importable, SkipsFailures;
+
+    public function startRow(): int
+    {
+        return 2;
+    }
+
+    private $rows = 0;
+
+    public function getRowCount(): int
+    {
+        return $this->rows;
+    }
+
+    public function mapping(int $index): array|string|null
+    {
+        $map = [
+            0 => "Timestamp",
+            1 => "Email Address",
+            2 => "Nama Enumerator",
+            3 => "Waktu Pengambilan Data",
+            4 => "1. Nama responden",
+            5 => "2. Nomor kontak (jika ada)",
+            6 => "3. Alamat (nama jalan/gang, RT/RW/dusun)",
+            7 => "4. Provinsi",
+            8 => "5. Kabupaten/kota",
+            9 => "6. Kecamatan",
+            10 => "7. Desa/kelurahan",
+            11 => "8. Usia (tahun)",
+            12 => "9. Jenis kelamin",
+            13 => "10. Status perkawinan",
+            14 => "11. Jenjang pendidikan formal terakhir",
+            15 => "12. Pendidikan non-formal",
+            16 => "13. Apakah Anda memiliki usaha sendiri sebelum menerima bantuan?",
+            17 => "13. Berapa rata-rata profit/keuntungan dari usaha yang Anda miliki per bulan? Rp………./bulan",
+            18 => "15. Apakah Anda pernah menerima ziswaf?",
+            19 => "16. Kapan pertama kali Anda menerima bantuan dari lembaga zakat (ZISWAF)? Bulan………... Tahun……………",
+            20 => "17.  Apa nama lembaga ziswaf yang memberikan bantuan?",
+            21 => "18.  Apa nama lembaga ziswaf yang memberikan bantuan?",
+            22 => "19. Selama satu tahun terakhir sudah berapa kali Anda menerima bantuan ziswaf?....................kali.",
+            23 => "20. Selama satu tahun terakhir berapa total nilai bantuan ziswaf yang diterima (perkiraan dalam Rupiah)? Rp………………..",
+            24 => "21. a) Apa jenis ziswaf yang diterima? Pangan (Rp)",
+            25 => "21. b) Apa jenis ziswaf yang diterima? Kesehatan (Rp)",
+            26 => "21. c) Apa jenis ziswaf yang diterima? Pendidikan/Beasiswa (Rp)",
+            27 => "21. d) Apa jenis ziswaf yang diterima? Bantuan Konsumtif Lainnya (Rp)",
+            28 => "21. e) Apa jenis ziswaf yang diterima? Bantuan Modal Usaha (Rp)",
+            29 => "21. f) Apa jenis ziswaf yang diterima? Bantuan Peralatan Usaha (Rp)",
+            30 => "21. g) Apa jenis ziswaf yang diterima? Bantuan Produktif Lainnya  (Rp)",
+            31 => "22. Selain bantuan ziswaf, apakah Anda menerima bantuan pembiayaan dari pihak lain?",
+            32 => "22. Jika ya, dari siapa",
+            33 => "23. Apakah Anda pernah menerima pembiayaan syariah?",
+            34 => "24. Kapan pertama kali Anda mendapatkan bantuan pembiayaan syariah tersebut? Bulan………... Tahun……………",
+            35 => " 25. Apa nama lembaga keuangan syariah yang memberikan bantuan pembiayaan? Sebutkan……….",
+            36 => "26. Apa jenis akad pembiayaan yang digunakan?",
+            37 => "27. Berapa lama jangka waktu pembiayaan yang diberikan?",
+            38 => "28. Selama satu tahun terakhir sudah berapa kali Anda menerima bantuan pembiayaan syariah dari lembaga tersebut?....................kali.",
+            39 => "29. Selama satu tahun terakhir berapa total nilai bantuan pembiayaan syariah yang Anda terima? Rp……………...…..",
+            40 => "30. Pembiayaan syariah yang diperoleh digunakan untuk apa saja?",
+            41 => "31. Selain pembiayaan syariah, apakah Anda menerima bantuan pembiayaan dari pihak lain?",
+            42 => "31. Jika menjawab iya pada pertanyaan sebelumnya, sebutkan bantuan yang diterima",
+            43 => "32. Sebelumnya, apakah Anda pernah mendapatkan pembiayaan dari lembaga keuangan syariah lainnya? Jika iya, sebutkan nama lembaga keuangannya",
+            44 => "33. Apakah Anda pernah mendapatkan kredit dari lembaga keuangan konvensional (misal bank konvensional, BPR, koperasi?) Jika iya, sebutkan nama lembaga keuangann ▶",
+            45 => "1. Nama Anggota Keluarga",
+            46 => "1. Hubungan dengan Kepala Keluarga",
+            47 => "1. Usia (tahun)",
+            48 => "1. Jenis Kelamin",
+            49 => "1. Status Perkawinan",
+            50 => "1. Jenjang Pendidikan Formal Terakhir",
+            51 => "1. Pendidikan Non Formal",
+            52 => "2. Nama Anggota Keluarga",
+            53 => "2. Hubungan dengan Kepala Keluarga",
+            54 => "2. Usia (tahun)",
+            55 => "2. Jenis Kelamin",
+            56 => "2. Status Perkawinan",
+            57 => "2. Jenjang Pendidikan Formal Terakhir",
+            58 => "2. Pendidikan Non Formal",
+            59 => "3. Nama Anggota Keluarga",
+            60 => "3. Hubungan dengan Kepala Keluarga",
+            61 => "3. Usia (tahun)",
+            62 => "3. Jenis Kelamin",
+            63 => "3. Status Perkawinan",
+            64 => "3. Jenjang Pendidikan Formal Terakhir",
+            65 => "3. Pendidikan Non Formal",
+            66 => "4. Nama Anggota Keluarga",
+            67 => "4. Hubungan dengan Kepala Keluarga",
+            68 => "4. Usia (tahun)",
+            69 => "4. Jenis Kelamin",
+            70 => "4. Status Perkawinan",
+            71 => "4. Jenjang Pendidikan Formal Terakhir",
+            72 => "4. Pendidikan Non Formal",
+            73 => "5. Nama Anggota Keluarga",
+            74 => "5. Hubungan dengan Kepala Keluarga",
+            75 => "5. Usia (tahun)",
+            76 => "5. Jenis Kelamin",
+            77 => "5. Status Perkawinan",
+            78 => "5. Jenjang Pendidikan Formal Terakhir",
+            79 => "5. Pendidikan Non Formal",
+            80 => "6. Nama Anggota Keluarga",
+            81 => "6. Hubungan dengan Kepala Keluarga",
+            82 => "6. Usia (tahun)",
+            83 => "6. Jenis Kelamin",
+            84 => "6. Status Perkawinan",
+            85 => "6. Jenjang Pendidikan Formal Terakhir",
+            86 => "6. Pendidikan Non Formal",
+            87 => "7. Nama Anggota Keluarga",
+            88 => "7. Hubungan dengan Kepala Keluarga",
+            89 => "7. Usia (tahun)",
+            90 => "7. Jenis Kelamin",
+            91 => "7. Status Perkawinan",
+            92 => "7. Jenjang Pendidikan Formal Terakhir",
+            93 => "7. Pendidikan Non Formal",
+            94 => "8. Nama Anggota Keluarga",
+            95 => "8. Hubungan dengan Kepala Keluarga",
+            96 => "7. Usia (tahun)",
+            97 => "8. Jenis Kelamin",
+            98 => "8. Status Perkawinan",
+            99 => "8. Jenjang Pendidikan Formal Terakhir",
+            100 => "8. Pendidikan Non Formal",
+            101 => "9. Nama Anggota Keluarga",
+            102 => "9. Hubungan dengan Kepala Keluarga",
+            103 => "9. Usia (tahun)",
+            104 => "9. Jenis Kelamin",
+            105 => "9. Status Perkawinan",
+            106 => "9. Jenjang Pendidikan Formal Terakhir",
+            107 => "9. Pendidikan Non Formal",
+            108 => "1. Nama Anggota Rumah Tangga",
+            109 => "1. Status Pekerjaan (sebulan terakhir)",
+            110 => "1. Jenis Pekerjaan",
+            111 => "1. Rata-rata Pendapatan (Rp/bulan)",
+            112 => "1. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            113 => "1. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            114 => "1. Total Pendapatan (Rp/bulan)",
+            115 => "2. Nama Anggota Rumah Tangga",
+            116 => "2. Status Pekerjaan (sebulan terakhir)",
+            117 => "2. Jenis Pekerjaan",
+            118 => "2. Rata-rata Pendapatan (Rp/bulan)",
+            119 => "2. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            120 => "2. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            121 => "2. Total Pendapatan (Rp/bulan)",
+            122 => "3. Nama Anggota Rumah Tangga",
+            123 => "3. Status Pekerjaan (sebulan terakhir)",
+            124 => "3. Jenis Pekerjaan",
+            125 => "3. Rata-rata Pendapatan (Rp/bulan)",
+            126 => "3. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            127 => "3. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            128 => "3. Total Pendapatan (Rp/bulan)",
+            129 => "4. Nama Anggota Rumah Tangga",
+            130 => "4. Status Pekerjaan (sebulan terakhir)",
+            131 => "4. Jenis Pekerjaan",
+            132 => "4. Rata-rata Pendapatan (Rp/bulan)",
+            133 => "4. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            134 => "4. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            135 => "4. Total Pendapatan (Rp/bulan)",
+            136 => "5. Nama Anggota Rumah Tangga",
+            137 => "5. Status Pekerjaan (sebulan terakhir)",
+            138 => "5. Jenis Pekerjaan",
+            139 => "5. Rata-rata Pendapatan (Rp/bulan)",
+            140 => "5. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            141 => "5. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            142 => "5. Total Pendapatan (Rp/bulan)",
+            143 => "6. Nama Anggota Rumah Tangga",
+            144 => "6. Status Pekerjaan (sebulan terakhir)",
+            145 => "6. Jenis Pekerjaan",
+            146 => "6. Rata-rata Pendapatan (Rp/bulan)",
+            147 => "6. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            148 => "6. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            149 => "6. Total Pendapatan (Rp/bulan)",
+            150 => "7. Nama Anggota Rumah Tangga",
+            151 => "7. Status Pekerjaan (sebulan terakhir)",
+            152 => "7. Jenis Pekerjaan",
+            153 => "7. Rata-rata Pendapatan (Rp/bulan)",
+            154 => "7. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            155 => "7. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            156 => "7. Total Pendapatan (Rp/bulan)",
+            157 => "8. Nama Anggota Rumah Tangga",
+            158 => "8. Status Pekerjaan (sebulan terakhir)",
+            159 => "8. Jenis Pekerjaan",
+            160 => "8. Rata-rata Pendapatan (Rp/bulan)",
+            161 => "8. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            162 => "8. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            163 => "8. Total Pendapatan (Rp/bulan)",
+            164 => "9. Nama Anggota Rumah Tangga",
+            165 => "9. Status Pekerjaan (sebulan terakhir)",
+            166 => "9. Jenis Pekerjaan",
+            167 => "9. Rata-rata Pendapatan (Rp/bulan)",
+            168 => "9. Pendapatan tidak tetap (Rp/bulan) Misal: kiriman keluarga, bantuan ziswaf, bantuan pemerintah, pekerjaan sampingan, dll",
+            169 => "9. Pendapatan dari aset yang disewakan (Rp/bulan) Misal tanah, kontrakan/kosan, ternak, kendaraan, alat usaha, dll",
+            170 => "9. Total Pendapatan (Rp/bulan)",
+            171 => "1. Rata-rata Pengeluaran (Rp) untuk Pangan (beras atau makanan pokok lainnya, sayur mayur, ayam/daging/ikan, susu, telur, makanan jadi, dll) (*satu minggu terakhir)",
+            172 => "2. Rata-rata Pengeluaran (Rp) untuk Rokok/tembakau (*satu minggu terakhir)",
+            173 => "3. Rata-rata Pengeluaran (Rp) untuk Sewa rumah/kontrakan/kosan (*satu bulan terakhir)",
+            174 => "4. Rata-rata Pengeluaran (Rp) untuk Listrik (*satu bulan terakhir)",
+            175 => "5. Rata-rata Pengeluaran (Rp) untuk Air (*satu bulan terakhir)",
+            176 => "6. Rata-rata Pengeluaran (Rp) untuk Gas/bahan bakar lainnya (*satu bulan terakhir)",
+            177 => "7. Rata-rata Pengeluaran (Rp) untuk Sandang (pakaian, sepatu/sandal, jahit/permak) (*satu bulan terakhir)",
+            178 => "8. Rata-rata Pengeluaran (Rp) untuk Pendidikan (uang sekolah, buku, alat tulis, transport anak sekolah, seragam, dll) (*satu bulan terakhir)",
+            179 => "9. Rata-rata Pengeluaran (Rp) untuk Pendidikan Kesehatan (mencakup obat-obatan, biaya berobat, pemeriksaan kesehatan, BPJS, jamkes) (*satu bulan terakhir)",
+            180 => "10. Rata-rata Pengeluaran (Rp) untuk Transportasi (mencakup biaya bis, ojek, angkot, perahu, dan biaya perbaikan kendaraan, bahan bakar kendaraan dan sejenisnya ▶ (*satu bulan terakhir)",
+            181 => "11. Rata-rata Pengeluaran (Rp) untuk Komunikasi (pembayaran rekening telepon dan pembelian voucher/isi pulsa, kartu perdana, paket data internet) (*satu bulan terakhir)",
+            182 => "12. Rata-rata Pengeluaran (Rp) untuk Rekreasi dan hiburan (mencakup jalan-jalan/liburan, kegiatan rekreasi sederhana) (*satu bulan terakhir)",
+            183 => "13. Rata-rata Pengeluaran (Rp) untuk Kebutuhan perawatan badan dan muka (mencakup sabun mandi, pasta/sikat gigi, perawatan muka) (*satu bulan terakhir)",
+            184 => "14. Rata-rata Pengeluaran (Rp) untuk Sosial & keagamaan (zakat, infak, sedekah, sumbangan sosial, kegiatan masjid) (*satu bulan terakhir)",
+            185 => "15. Rata-rata Pengeluaran (Rp) untuk Pembayaran angsuran kredit/cicilan utang (*satu bulan terakhir)",
+            186 => "16. Rata-rata Pengeluaran (Rp) untuk Lain-lain (pengeluaran tidak rutin, seperti kondangan, pesta, biaya darurat, perbaikan rumah, dll.) (*satu bulan terakhir)",
+            187 => "1. Apakah Anda Memiliki tabungan di bank konvensional",
+            188 => "2. Apakah Anda Memiliki tabungan di bank Syariah",
+            189 => "3. Apakah Anda Memiliki tabungan di koperasi konvensional",
+            190 => "4. Apakah Anda Memiliki tabungan di koperasi syariah/BMT",
+            191 => "5. Apakah Anda Memiliki tabungan di lembaga zakat",
+            192 => "6. Apakah Anda mengikuti arisan rutin",
+            193 => "7. Apakah Anda  Memiliki simpanan di rumah dalam bentuk celengan brankas, dan sebagainya",
+            194 => "8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Shalat",
+            195 => "8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Puasa",
+            196 => "8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Zakat/infak",
+            197 => "8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Lingkungan Keluarga",
+            198 => "8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Kebijakan Pemerintah",
+            199 => "8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Shalat",
+            200 => "8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Puasa",
+            201 => "8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Zakat/infak",
+            202 => "8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Lingkungan Keluarga",
+            203 => "8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Kebijakan Pemerintah",
+            204 => "1.  Apakah Anda pernah mendapatkan pendampingan, pelatihan, atau bimbingan selama menerima bantuan?",
+            205 => "2. Jika Ya, seberapa sering Anda mengikuti pendampingan, pelatihan, atau bimbingan yang diberikan selama menerima bantuan?",
+            206 => "3. Apa saja jenis pendampingan dan pelatihan yang diikuti (jawaban boleh lebih dari satu)?",
+            207 => "4. Jenis pelatihan apa yang dirasa sangat membantu mengembangkan usaha Anda (jawaban boleh lebih dari satu)?",
+            208 => "5. Pembinaan spiritual (pengajian/pertemuan rutin) sekurang-kurangnya 1x dalam satu (1) bulan",
+            209 => "6. Pembinaan dan peningkatan kapasitas usaha sekurang-kurangnya 1x dalam enam (6) bulan",
+            210 => "7. Pendampingan rutin (monitoring program) sekurang-kurangnya 1x dalam 1 bulan",
+
+        ];
+
+        return $map[$index] ?? null;
+    }
+
+    private function getOptionId(string $model, string|null $value, int $index)
     {
         // Jika data kosong → kembalikan null
         if (!$value) {
@@ -40,98 +278,42 @@ class CibestImport implements ToModel, WithHeadingRow
 
         // Jika tidak ditemukan → throw error
         if (!$record) {
-            throw new \Exception("Nilai '{$value}' pada kolom '{$columnName}' tidak ditemukan di tabel {$model}.");
+            throw new Exception("Nilai '{$value}' pada kolom '{$this->mapping($index)}' tidak ditemukan di tabel {$model}.");
         }
 
         return $record->id;
     }
 
-    private function getJenisKelaminId(string|null $data)
+    public array $data = [];
+
+    public function collection(Collection $rows)
     {
-        return $this->getOptionId(JenisKelaminOption::class, $data, '9. Jenis kelamin');
-    }
-
-    private function getStatusPerkawinanId($data)
-    {
-        return $this->getOptionId(StatusPerkawinanOption::class, $data, '10. Status perkawinan');
-    }
-
-    private function getPendidikanFormalId($data)
-    {
-        return $this->getOptionId(PendidikanFormalOption::class, $data, '11. Jenjang pendidikan formal terakhir');
-    }
-
-    private function getPendidikanNonFormalId($data)
-    {
-        return $this->getOptionId(PendidikanNonformalOption::class, $data, '12. Pendidikan non-formal');
-    }
-
-    private function getKeteranganShalatId($data, string $columnName)
-    {
-        return $this->getOptionId(KeteranganShalatLikert::class, $data, $columnName);
-    }
-
-    private function getKeteranganPuasaId($data, string $columnName)
-    {
-        return $this->getOptionId(KeteranganPuasaLikert::class, $data, $columnName);
-    }
-
-    private function getKeteranganZakatInfakId($data, string $columnName)
-    {
-        return $this->getOptionId(KeteranganZakatInfakLikert::class, $data, $columnName);
-    }
-
-    private function getKeteranganLingkunganKeluargaId($data, string $columnName)
-    {
-        return $this->getOptionId(KeteranganLingkunganKeluargaLikert::class, $data, $columnName);
-    }
-
-    private function getKeteranganKebijakanPemerintahId($data, string $columnName)
-    {
-        return $this->getOptionId(KeteranganKebijakanPemerintahLikert::class, $data, $columnName);
-    }
-
-    private $rows = 0;
-
-    public function getRowCount(): int
-    {
-        return $this->rows;
-    }
-
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
-    public function model(array $row)
-    {
-        try {
-            ++$this->rows;
-
-            return new CibestForm([
+        foreach ($rows as $row)
+        {
+            $this->data[] = [
                 'user_id' => Auth::user()->id,
     
                 // --- Enumerator ---
-                'nama_enumerator'           => $row['Nama Enumerator'],
-                'waktu_pengambilan_data'    => $row['Waktu Pengambilan Data'],
+                'nama_enumerator'           => $row[2],
+                'waktu_pengambilan_data'    => Carbon::parse($row[3])->format('Y-m-d'),
     
                 // --- Karakteristik Responden ---
-                'nama_responden'    => $row['1. Nama responden'],
-                'nomor_kontak'      => $row['2. Nomor kontak (jika ada)'] ?? null,
-                'alamat'            => $row['3. Alamat (nama jalan/gang, RT/RW/dusun)'],
-                'provinsi'          => $row['4. Provinsi'],
-                'kabupaten_kota'    => $row['5. Kabupaten/kota'],
-                'kecamatan'         => $row['6. Kecamatan'],
-                'desa_kelurahan'    => $row['7. Desa/kelurahan'],
-                'usia'              => $row['8. Usia responden (tahun)'] ?? 2,
-                'jenis_kelamin_option_id'         => $this->getJenisKelaminId(Str::ucfirst($row['9. Jenis kelamin'])),
-                'status_perkawinan_option_id'     => $this->getStatusPerkawinanId($row['10. Status perkawinan']),
-                'pendidikan_formal_option_id'     => $this->getPendidikanFormalId($row['11. Jenjang pendidikan formal terakhir']),
-                'pendidikan_nonformal_option_id'  => $this->getPendidikanNonFormalId($row['12. Pendidikan non-formal']),
+                'nama_responden'    => $row[4],
+                'nomor_kontak'      => $row[5] ?? null,
+                'alamat'            => $row[6],
+                'provinsi'          => $row[7],
+                'kabupaten_kota'    => $row[8],
+                'kecamatan'         => $row[9],
+                'desa_kelurahan'    => $row[10],
+                'usia'              => $row[11] ?? 2,
+                'jenis_kelamin_option_id'         => $this->getOptionId(JenisKelaminOption::class, Str::ucfirst($row[12]), 12),
+                'status_perkawinan_option_id'     => $this->getOptionId(StatusPerkawinanOption::class, $row[13], 13),
+                'pendidikan_formal_option_id'     => $this->getOptionId(PendidikanFormalOption::class, $row[14], 14),
+                'pendidikan_nonformal_option_id'  => $this->getOptionId(PendidikanNonformalOption::class, $row[15], 15),
     
                 // --- Usaha dan Profit ---
-                'memiliki_usaha_sendiri' => $row['13. Apakah Anda memiliki usaha sendiri sebelum menerima bantuan?'],
-                'rata_rata_profit'       => $row['13. Berapa rata-rata profit/keuntungan dari usaha yang Anda miliki per bulan? Rp………./bulan'] ?? 0,
+                'memiliki_usaha_sendiri' => ($row[16] ?? null) === "Ya",
+                'rata_rata_profit'       => $row[17] ?? 0,
     
                 // // --- Bantuan ZISWAF ---
                 // 'bantuan_ziswaf_section_id' => $row['15. Apakah Anda pernah menerima ziswaf?'] ?? null,
@@ -140,91 +322,119 @@ class CibestImport implements ToModel, WithHeadingRow
                 // 'pembiayaan_syariah_section_id' => $row['23. Apakah Anda pernah menerima pembiayaan syariah?'] ?? null,
     
                 // --- Pengeluaran Rumah Tangga ---
-                'pangan'            => $row['1. Rata-rata Pengeluaran (Rp) untuk Pangan (beras atau makanan pokok lainnya, sayur mayur, ayam/daging/ikan, susu, telur, makanan jadi, dll) (*satu minggu terakhir)'] ?? 0,
-                'rokok_tembakau'    => $row['2. Rata-rata Pengeluaran (Rp) untuk Rokok/tembakau (*satu minggu terakhir)'] ?? 0,
-                'sewa_rumah'        => $row['3. Rata-rata Pengeluaran (Rp) untuk Sewa rumah/kontrakan/kosan (*satu bulan terakhir)'] ?? 0,
-                'listrik'           => $row['4. Rata-rata Pengeluaran (Rp) untuk Listrik (*satu bulan terakhir)'] ?? 0,
-                'air'               => $row['5. Rata-rata Pengeluaran (Rp) untuk Air (*satu bulan terakhir)'] ?? 0,
-                'bahan_bakar'       => $row['6. Rata-rata Pengeluaran (Rp) untuk Gas/bahan bakar lainnya (*satu bulan terakhir)'] ?? 0,
-                'sandang'           => $row['7. Rata-rata Pengeluaran (Rp) untuk Sandang (pakaian, sepatu/sandal, jahit/permak) (*satu bulan terakhir)'] ?? 0,
-                'pendidikan'        => $row['8. Rata-rata Pengeluaran (Rp) untuk Pendidikan (uang sekolah, buku, alat tulis, transport anak sekolah, seragam, dll) (*satu bulan terakhir)'] ?? 0,
-                'kesehatan'         => $row['9. Rata-rata Pengeluaran (Rp) untuk Pendidikan Kesehatan (mencakup obat-obatan, biaya berobat, pemeriksaan kesehatan, BPJS, jamkes) (*satu bulan terakhir)'] ?? 0,
-                'transportasi'      => $row['10. Rata-rata Pengeluaran (Rp) untuk Transportasi (mencakup biaya bis, ojek, angkot, perahu, dan biaya perbaikan kendaraan, bahan bakar kendaraan dan sejenisnya) (*satu bulan terakhir)'] ?? 0,
-                'komunikasi'        => $row['11. Rata-rata Pengeluaran (Rp) untuk Komunikasi (pembayaran rekening telepon dan pembelian voucher/isi pulsa, kartu perdana, paket data internet) (*satu bulan terakhir)'] ?? 0,
-                'rekreasi_hiburan'  => $row['12. Rata-rata Pengeluaran (Rp) untuk Rekreasi dan hiburan (mencakup jalan-jalan/liburan, kegiatan rekreasi sederhana) (*satu bulan terakhir)'] ?? 0,
-                'perawatan_badan'   => $row['13. Rata-rata Pengeluaran (Rp) untuk Kebutuhan perawatan badan dan muka (mencakup sabun mandi, pasta/sikat gigi, perawatan muka) (*satu bulan terakhir)'] ?? 0,
-                'sosial_keagamaan'  => $row['14. Rata-rata Pengeluaran (Rp) untuk Sosial & keagamaan (zakat, infak, sedekah, sumbangan sosial, kegiatan masjid) (*satu bulan terakhir)'] ?? 0,
-                'angsuran_kredit'   => $row['15. Rata-rata Pengeluaran (Rp) untuk Pembayaran angsuran kredit/cicilan utang (*satu bulan terakhir)'] ?? 0,
-                'lain_lain'         => $row['16. Rata-rata Pengeluaran (Rp) untuk Lain-lain (pengeluaran tidak rutin, seperti kondangan, pesta, biaya darurat, perbaikan rumah, dll.) (*satu bulan terakhir)'] ?? 0,
+                'pangan'            => $row[171] ?? 0,
+                'rokok_tembakau'    => $row[172] ?? 0,
+                'sewa_rumah'        => $row[173] ?? 0,
+                'listrik'           => $row[174] ?? 0,
+                'air'               => $row[175] ?? 0,
+                'bahan_bakar'       => $row[176] ?? 0,
+                'sandang'           => $row[177] ?? 0,
+                'pendidikan'        => $row[178] ?? 0,
+                'kesehatan'         => $row[179] ?? 0,
+                'transportasi'      => $row[180] ?? 0,
+                'komunikasi'        => $row[181] ?? 0,
+                'rekreasi_hiburan'  => $row[182] ?? 0,
+                'perawatan_badan'   => $row[183] ?? 0,
+                'sosial_keagamaan'  => $row[184] ?? 0,
+                'angsuran_kredit'   => $row[185] ?? 0,
+                'lain_lain'         => $row[186] ?? 0,
     
                 // --- Tabungan ---
-                'memiliki_tabungan_bank_konvensional'     => $row['1. Apakah Anda Memiliki tabungan di bank konvensional'] === "Ya" ? true : false,
-                'memiliki_tabungan_bank_syariah'          => $row['2. Apakah Anda Memiliki tabungan di bank Syariah'] === "Ya" ? true : false,
-                'memiliki_tabungan_koperasi_konvensional' => $row['3. Apakah Anda Memiliki tabungan di koperasi konvensional'] === "Ya" ? true : false,
-                'memiliki_tabungan_koperasi_syariah'      => $row['4. Apakah Anda Memiliki tabungan di koperasi syariah/BMT'] === "Ya" ? true : false,
-                'memiliki_tabungan_lembaga_zakat'         => $row['5. Apakah Anda Memiliki tabungan di lembaga zakat'] === "Ya" ? true : false,
-                'mengikuti_arisan_rutin'                  => $row['6. Apakah Anda mengikuti arisan rutin'] === "Ya" ? true : false,
-                'memiliki_simpanan_rumah'                 => $row['7. Apakah Anda  Memiliki simpanan di rumah dalam bentuk celengan brankas, dan sebagainya'] === "Ya" ? true : false,
+                'memiliki_tabungan_bank_konvensional'     => ($row[187] ?? null) === "Ya",
+                'memiliki_tabungan_bank_syariah'          => ($row[188] ?? null) === "Ya",
+                'memiliki_tabungan_koperasi_konvensional' => ($row[189] ?? null) === "Ya",
+                'memiliki_tabungan_koperasi_syariah'      => ($row[190] ?? null) === "Ya",
+                'memiliki_tabungan_lembaga_zakat'         => ($row[191] ?? null) === "Ya",
+                'mengikuti_arisan_rutin'                  => ($row[192] ?? null) === "Ya",
+                'memiliki_simpanan_rumah'                 => ($row[193] ?? null) === "Ya",
     
                 // --- Spiritual Sebelum ---
-                'shalat_sebelum'               => $this->getKeteranganShalatId(
-                    $row['8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Shalat'],
-                    '8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Shalat'
-                ),
-    
-                'puasa_sebelum'                => $this->getKeteranganPuasaId(
-                    $row['8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Puasa'],
-                    '8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Puasa'
-                ),
-    
-                'zakat_infak_sebelum'          => $this->getKeteranganZakatInfakId(
-                    $row['8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Zakat/infak'],
-                    '8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Zakat/infak'
-                ),
-    
-                'lingkungan_keluarga_sebelum'  => $this->getKeteranganLingkunganKeluargaId(
-                    $row['8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Lingkungan Keluarga'],
-                    '8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Lingkungan Keluarga'
-                ),
-    
-                'kebijakan_pemerintah_sebelum' => $this->getKeteranganKebijakanPemerintahId(
-                    $row['8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Kebijakan Pemerintah'],
-                    '8.1. Kondisi Spiritual Responden Sebelum Menerima Bantuan Kebijakan Pemerintah'
-                ),
-    
-    
+                'shalat_sebelum'               => $this->getOptionId(KeteranganShalatLikert::class, $row[194], 194),
+                'puasa_sebelum'                => $this->getOptionId(KeteranganPuasaLikert::class, $row[195], 195),
+                'zakat_infak_sebelum'          => $this->getOptionId(KeteranganZakatInfakLikert::class, $row[196], 196),
+                'lingkungan_keluarga_sebelum'  => $this->getOptionId(KeteranganLingkunganKeluargaLikert::class, $row[197], 197),
+                'kebijakan_pemerintah_sebelum' => $this->getOptionId(KeteranganKebijakanPemerintahLikert::class, $row[198], 198),
+
                 // --- Spiritual Setelah ---
-                'shalat_setelah'               => $this->getKeteranganShalatId(
-                    $row['8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Shalat'],
-                    '8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Shalat'
-                ),
-    
-                'puasa_setelah'                => $this->getKeteranganPuasaId(
-                    $row['8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Puasa'],
-                    '8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Puasa'
-                ),
-    
-                'zakat_infak_setelah'          => $this->getKeteranganZakatInfakId(
-                    $row['8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Zakat/infak'],
-                    '8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Zakat/infak'
-                ),
-    
-                'lingkungan_keluarga_setelah'  => $this->getKeteranganLingkunganKeluargaId(
-                    $row['8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Lingkungan Keluarga'],
-                    '8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Lingkungan Keluarga'
-                ),
-    
-                'kebijakan_pemerintah_setelah' => $this->getKeteranganKebijakanPemerintahId(
-                    $row['8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Kebijakan Pemerintah'],
-                    '8.2. Kondisi Spiritual Responden Setelah Menerima Bantuan Kebijakan Pemerintah'
-                ),
+                'shalat_setelah'               => $this->getOptionId(KeteranganShalatLikert::class, $row[199], 199),
+                'puasa_setelah'                => $this->getOptionId(KeteranganPuasaLikert::class, $row[200], 200),
+                'zakat_infak_setelah'          => $this->getOptionId(KeteranganZakatInfakLikert::class, $row[201], 201),
+                'lingkungan_keluarga_setelah'  => $this->getOptionId(KeteranganLingkunganKeluargaLikert::class, $row[202], 202),
+                'kebijakan_pemerintah_setelah' => $this->getOptionId(KeteranganKebijakanPemerintahLikert::class, $row[203], 203),
+
                 // // --- Pembinaan & Pendampingan ---
                 // 'pembinaan_pendampingan_section_id' => $row['1.  Apakah Anda pernah mendapatkan pendampingan, pelatihan, atau bimbingan selama menerima bantuan?'] ?? null,
-            ]);
-        } catch (Throwable $e) {
-            throw new Exception(
-                "Error pada baris {$this->getRowCount()}: " . $e->getMessage()
-            );
+            ];
         }
+    }
+
+    public function rules(): array
+    {
+        return [
+            // --- Enumerator ---
+            '2' => 'required|string',
+            '3' => 'required|date',
+
+            // --- Karakteristik Responden ---
+            '4' => 'required|string',
+            '5' => 'nullable|string',
+            '6' => 'required|string',
+            '7' => 'required|string',
+            '8' => 'required|string',
+            '9' => 'required|string',
+            '10' => 'required|string',
+            '11' => 'required|integer|min:0|max:150',
+
+            // opsi: cek berdasarkan kolom `value` di tabel opsi
+            '12' => 'required|exists:jenis_kelamin_options,value',
+            '13' => 'required|exists:status_perkawinan_options,value',
+            '14' => 'required|exists:pendidikan_formal_options,value',
+            '15' => 'required|exists:pendidikan_nonformal_options,value',
+
+            // --- Usaha dan Profit ---
+            '16' => 'required|in:Ya,Tidak',
+            '17' => 'nullable|integer|min:0',
+
+            // --- Pengeluaran Rumah Tangga
+            '171' => 'nullable|integer|min:0',
+            '172' => 'nullable|integer|min:0',
+            '173' => 'nullable|integer|min:0',
+            '174' => 'nullable|integer|min:0',
+            '175' => 'nullable|integer|min:0',
+            '176' => 'nullable|integer|min:0',
+            '177' => 'nullable|integer|min:0',
+            '178' => 'nullable|integer|min:0',
+            '179' => 'nullable|integer|min:0',
+            '180' => 'nullable|integer|min:0',
+            '181' => 'nullable|integer|min:0',
+            '182' => 'nullable|integer|min:0',
+            '183' => 'nullable|integer|min:0',
+            '184' => 'nullable|integer|min:0',
+            '185' => 'nullable|integer|min:0',
+            '186' => 'nullable|integer|min:0',
+
+            // --- Tabungan (Ya/Tidak) — nama heading persis ---
+            '187' => 'required|in:Ya,Tidak',
+            '188' => 'required|in:Ya,Tidak',
+            '189' => 'required|in:Ya,Tidak',
+            '190' => 'required|in:Ya,Tidak',
+            '191' => 'required|in:Ya,Tidak',
+            '192' => 'required|in:Ya,Tidak',
+            '193' => 'required|in:Ya,Tidak',
+
+            // --- Spiritual Sebelum (menggunakan teks pilihan) ---
+            '194' => 'required|exists:keterangan_shalat_likerts,value',
+            '195' => 'required|exists:keterangan_puasa_likerts,value',
+            '196' => 'required|exists:keterangan_zakat_infak_likerts,value',
+            '197' => 'required|exists:keterangan_lingkungan_keluarga_likerts,value',
+            '198' => 'required|exists:keterangan_kebijakan_pemerintah_likerts,value',
+
+            // --- Spiritual Setelah ---
+            '199' => 'required|exists:keterangan_shalat_likerts,value',
+            '200' => 'required|exists:keterangan_puasa_likerts,value',
+            '201' => 'required|exists:keterangan_zakat_infak_likerts,value',
+            '202' => 'required|exists:keterangan_lingkungan_keluarga_likerts,value',
+            '203' => 'required|exists:keterangan_kebijakan_pemerintah_likerts,value',
+        ];
     }
 }

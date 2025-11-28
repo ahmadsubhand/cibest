@@ -17,7 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('cibest', function () {
-        return Inertia::render('cibest');
+        return Inertia::render('cibest/index');
     })->name('cibest');
     Route::post('cibest/upload', 
         [CibestFormController::class, 'uploadCibest']
