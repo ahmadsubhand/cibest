@@ -9,6 +9,7 @@ use App\Models\BantuanZiswafSection;
 use App\Models\CibestForm;
 use App\Models\KarakteristikRumahTanggaSection;
 use App\Models\PembiayaanSyariahSection;
+use App\Models\PendapatanKetenagakerjaanSection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -88,7 +89,12 @@ class CibestFormController extends Controller
             }
 
             $cibestForm = CibestForm::create([
-                ...Arr::except($row, 'bantuan_ziswaf_section', 'pembiayaan_syariah_section', 'karakteristik_rumah_tangga_section'),
+                ...Arr::except($row, 
+                    'bantuan_ziswaf_section', 
+                    'pembiayaan_syariah_section', 
+                    'karakteristik_rumah_tangga_section',
+                    'pendapatan_ketenagakerjaan_section',
+                ),
                 'bantuan_ziswaf_section_id' => $bantuanZiswaf->id ?? null,
                 'user_id' => Auth::user()->id,
             ]);
@@ -96,6 +102,15 @@ class CibestFormController extends Controller
             if ($row['karakteristik_rumah_tangga_section']) {
                 foreach ($row['karakteristik_rumah_tangga_section'] as $member) {
                     KarakteristikRumahTanggaSection::create([
+                        ...$member,
+                        'cibest_form_id' => $cibestForm->id
+                    ]);
+                }
+            }
+
+            if ($row['pendapatan_ketenagakerjaan_section']) {
+                foreach ($row['pendapatan_ketenagakerjaan_section'] as $member) {
+                    PendapatanKetenagakerjaanSection::create([
                         ...$member,
                         'cibest_form_id' => $cibestForm->id
                     ]);

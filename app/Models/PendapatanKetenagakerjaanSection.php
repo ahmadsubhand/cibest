@@ -13,8 +13,8 @@ class PendapatanKetenagakerjaanSection extends Model
     protected $fillable = [
         'cibest_form_id',
         'nama_anggota',
-        'status_pekerjaan_option_id',
-        'jenis_pekerjaan_option_id',
+        'status_id',
+        'jenis_id',
         'rata_rata_pendapatan',
         'pendapatan_tidak_tetap',
         'pendapatan_aset',

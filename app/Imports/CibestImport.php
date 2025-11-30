@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\AkadPembiayaanCheckbox;
 use App\Models\JangkaWaktuOption;
 use App\Models\JenisKelaminOption;
+use App\Models\JenisPekerjaanOption;
 use App\Models\KeteranganKebijakanPemerintahLikert;
 use App\Models\KeteranganLingkunganKeluargaLikert;
 use App\Models\KeteranganPuasaLikert;
@@ -16,6 +17,7 @@ use App\Models\PendidikanFormalOption;
 use App\Models\PendidikanNonformalOption;
 use App\Models\PenggunaanPembiayaanCheckbox;
 use App\Models\ProgramBantuanCheckbox;
+use App\Models\StatusPekerjaanOption;
 use App\Models\StatusPerkawinanOption;
 use Carbon\Carbon;
 use Exception;
@@ -269,7 +271,7 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
         return $map[$index] ?? null;
     }
 
-    private function getOptionId(string $model, string|null $value, int $index): int|null
+    private function getOptionId(string $model, string|null $value, int $index, bool $allowIsOther = false): int|null
     {
         // Jika data kosong → kembalikan null
         if (!$value) {
@@ -284,7 +286,11 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
 
         // Jika tidak ditemukan → throw error
         if (!$record) {
-            throw new Exception("Nilai '{$value}' pada kolom '{$this->mapping($index)}' tidak ditemukan di tabel {$model}.");
+            if (!$allowIsOther) 
+                throw new Exception("Nilai '{$value}' pada kolom '{$this->mapping($index)}' tidak ditemukan di tabel {$model}.");
+            return $model::create([
+                'value' => $value, 'is_other' => true
+            ])->id;
         }
 
         return $record->id;
@@ -331,9 +337,9 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
 
         $start = 45;
         $columns = 7;
-        $max = 8;
+        $maxMember = 9;
 
-        for ($i = 0; $i < $max; $i++) {
+        for ($i = 0; $i < $maxMember; $i++) {
             $base = $start + ($i * $columns);
 
             // Jika nama anggota kosong, skip blok ini
@@ -347,6 +353,34 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
                 'status_perkawinan_id' => $this->getOptionId(StatusPerkawinanOption::class, $row[$base + 4], $base + 4),
                 'pendidikan_formal_id' => $this->getOptionId(PendidikanFormalOption::class, $row[$base + 5], $base + 5),
                 'pendidikan_non_id' => $this->getOptionId(PendidikanNonformalOption::class, $row[$base + 6], $base + 6),
+            ];
+        }
+
+        return $data;
+    }
+
+    private function getPendapatanKetenagakerjaan($row): array
+    {
+        $data = [];
+
+        $start = 108;
+        $columns = 7;
+        $maxMember = 9;
+
+        for ($i = 0; $i < $maxMember; $i++) {
+            $base = $start + ($i * $columns);
+
+            // Jika nama anggota kosong, skip blok ini
+            if (empty($row[$base])) continue;
+
+            $data[] = [
+                'nama_anggota' => $row[$base],
+                'status_id' => $this->getOptionId(StatusPekerjaanOption::class, $row[$base + 1], $base + 1),
+                'jenis_id' => $this->getOptionId(JenisPekerjaanOption::class, $row[$base + 2], $base + 2, true),
+                'rata_rata_pendapatan' => $row[$base + 3] ?? 0,
+                'pendapatan_tidak_tetap' => $row[$base + 4] ?? 0,
+                'pendapatan_aset' => $row[$base + 5] ?? 0,
+                'total_pendapatan' => $row[$base + 6] ?? 0,
             ];
         }
 
@@ -423,6 +457,9 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
 
                 // --- Karakteristik Rumah Tangga ---
                 'karakteristik_rumah_tangga_section' => $this->getKarakteristikRumahTangga($row),
+
+                // --- Pendapatan Ketenagakerjaan ---
+                'pendapatan_ketenagakerjaan_section' => $this->getPendapatanKetenagakerjaan($row),
     
                 // --- Pengeluaran Rumah Tangga ---
                 'pangan'            => $row[171] ?? 0,
@@ -594,6 +631,88 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
             '98' => 'required_with:94|nullable|exists:status_perkawinan_options,value',
             '99' => 'required_with:94|nullable|exists:pendidikan_formal_options,value',
             '100'=> 'required_with:94|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 9
+            '101' => 'nullable|string',
+            '102' => 'required_with:101|nullable|string',
+            '103' => 'required_with:101|nullable|integer|min:0',
+            '104' => 'required_with:101|nullable|exists:jenis_kelamin_options,value',
+            '105' => 'required_with:101|nullable|exists:status_perkawinan_options,value',
+            '106' => 'required_with:101|nullable|exists:pendidikan_formal_options,value',
+            '107'=> 'required_with:101|nullable|exists:pendidikan_nonformal_options,value',
+
+            // -- Pendapatan Ketenagakerjaan
+            // Anggota 1
+            '108' => 'required|string',
+            '109' => 'required|exists:status_pekerjaan_options,value',
+            '110' => 'required|string',
+            '111' => 'nullable|integer|min:0',
+            '112' => 'nullable|integer|min:0',
+            '113' => 'nullable|integer|min:0',
+            '114' => 'nullable|integer|min:0',
+            // Anggota 2
+            '115' => 'nullable|string',
+            '116' => 'required_with:115|exists:status_pekerjaan_options,value',
+            '117' => 'required_with:115|string',
+            '118' => 'nullable|integer|min:0',
+            '119' => 'nullable|integer|min:0',
+            '120' => 'nullable|integer|min:0',
+            '121' => 'nullable|integer|min:0',
+            // Anggota 3
+            '122' => 'nullable|string',
+            '123' => 'required_with:122|exists:status_pekerjaan_options,value',
+            '124' => 'required_with:122|string',
+            '125' => 'nullable|integer|min:0',
+            '126' => 'nullable|integer|min:0',
+            '127' => 'nullable|integer|min:0',
+            '128' => 'nullable|integer|min:0',
+            // Anggota 4
+            '129' => 'nullable|string',
+            '130' => 'required_with:129|exists:status_pekerjaan_options,value',
+            '131' => 'required_with:129|string',
+            '132' => 'nullable|integer|min:0',
+            '133' => 'nullable|integer|min:0',
+            '134' => 'nullable|integer|min:0',
+            '135' => 'nullable|integer|min:0',
+            // Anggota 5
+            '136' => 'nullable|string',
+            '137' => 'required_with:136|exists:status_pekerjaan_options,value',
+            '138' => 'required_with:136|string',
+            '139' => 'nullable|integer|min:0',
+            '140' => 'nullable|integer|min:0',
+            '141' => 'nullable|integer|min:0',
+            '142' => 'nullable|integer|min:0',
+            // Anggota 6
+            '143' => 'nullable|string',
+            '144' => 'required_with:143|exists:status_pekerjaan_options,value',
+            '145' => 'required_with:143|string',
+            '146' => 'nullable|integer|min:0',
+            '147' => 'nullable|integer|min:0',
+            '148' => 'nullable|integer|min:0',
+            '149' => 'nullable|integer|min:0',
+            // Anggota 7
+            '150' => 'nullable|string',
+            '151' => 'required_with:150|exists:status_pekerjaan_options,value',
+            '152' => 'required_with:150|string',
+            '153' => 'nullable|integer|min:0',
+            '154' => 'nullable|integer|min:0',
+            '155' => 'nullable|integer|min:0',
+            '156' => 'nullable|integer|min:0',
+            // Anggota 8
+            '157' => 'nullable|string',
+            '158' => 'required_with:157|exists:status_pekerjaan_options,value',
+            '159' => 'required_with:157|string',
+            '160' => 'nullable|integer|min:0',
+            '161' => 'nullable|integer|min:0',
+            '162' => 'nullable|integer|min:0',
+            '163' => 'nullable|integer|min:0',
+            // Anggota 9
+            '164' => 'nullable|string',
+            '165' => 'required_with:164|exists:status_pekerjaan_options,value',
+            '166' => 'required_with:164|string',
+            '167' => 'nullable|integer|min:0',
+            '168' => 'nullable|integer|min:0',
+            '169' => 'nullable|integer|min:0',
+            '170' => 'nullable|integer|min:0',
             
             // --- Pengeluaran Rumah Tangga
             '171' => 'nullable|integer|min:0',
