@@ -325,6 +325,34 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
         return $ids;
     }
 
+    private function getKarakteristikRumahTangga($row): array
+    {
+        $data = [];
+
+        $start = 45;
+        $columns = 7;
+        $max = 8;
+
+        for ($i = 0; $i < $max; $i++) {
+            $base = $start + ($i * $columns);
+
+            // Jika nama anggota kosong, skip blok ini
+            if (empty($row[$base])) continue;
+
+            $data[] = [
+                'nama_anggota' => $row[$base],
+                'hubungan_kepala_keluarga' => $row[$base + 1],
+                'usia' => $row[$base + 2],
+                'jenis_kelamin_id' => $this->getOptionId(JenisKelaminOption::class, $row[$base + 3], $base + 3),
+                'status_perkawinan_id' => $this->getOptionId(StatusPerkawinanOption::class, $row[$base + 4], $base + 4),
+                'pendidikan_formal_id' => $this->getOptionId(PendidikanFormalOption::class, $row[$base + 5], $base + 5),
+                'pendidikan_non_id' => $this->getOptionId(PendidikanNonformalOption::class, $row[$base + 6], $base + 6),
+            ];
+        }
+
+        return $data;
+    }
+
     public array $data = [];
 
     public function collection(Collection $rows)
@@ -392,6 +420,9 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
                         'lembaga_konvensional' => $row[44],
                     ]
                     : null,
+
+                // --- Karakteristik Rumah Tangga ---
+                'karakteristik_rumah_tangga_section' => $this->getKarakteristikRumahTangga($row),
     
                 // --- Pengeluaran Rumah Tangga ---
                 'pangan'            => $row[171] ?? 0,
@@ -498,6 +529,72 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
             '43' => 'nullable|string',
             '44' => 'nullable|string',
 
+            // -- Karakteristik Rumah Tangga
+            // Anggota 1
+            '45' => 'required|string',
+            '46' => 'required|string',
+            '47' => 'required|integer|min:0',
+            '48' => 'required|exists:jenis_kelamin_options,value',
+            '49' => 'required|exists:status_perkawinan_options,value',
+            '50' => 'required|exists:pendidikan_formal_options,value',
+            '51' => 'required|exists:pendidikan_nonformal_options,value',
+            // Anggota 2
+            '52' => 'nullable|string',
+            '53' => 'required_with:52|nullable|string',
+            '54' => 'required_with:52|nullable|integer|min:0',
+            '55' => 'required_with:52|nullable|exists:jenis_kelamin_options,value',
+            '56' => 'required_with:52|nullable|exists:status_perkawinan_options,value',
+            '57' => 'required_with:52|nullable|exists:pendidikan_formal_options,value',
+            '58' => 'required_with:52|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 3
+            '59' => 'nullable|string',
+            '60' => 'required_with:59|nullable|string',
+            '61' => 'required_with:59|nullable|integer|min:0',
+            '62' => 'required_with:59|nullable|exists:jenis_kelamin_options,value',
+            '63' => 'required_with:59|nullable|exists:status_perkawinan_options,value',
+            '64' => 'required_with:59|nullable|exists:pendidikan_formal_options,value',
+            '65' => 'required_with:59|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 4
+            '66' => 'nullable|string',
+            '67' => 'required_with:66|nullable|string',
+            '68' => 'required_with:66|nullable|integer|min:0',
+            '69' => 'required_with:66|nullable|exists:jenis_kelamin_options,value',
+            '70' => 'required_with:66|nullable|exists:status_perkawinan_options,value',
+            '71' => 'required_with:66|nullable|exists:pendidikan_formal_options,value',
+            '72' => 'required_with:66|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 5
+            '73' => 'nullable|string',
+            '74' => 'required_with:73|nullable|string',
+            '75' => 'required_with:73|nullable|integer|min:0',
+            '76' => 'required_with:73|nullable|exists:jenis_kelamin_options,value',
+            '77' => 'required_with:73|nullable|exists:status_perkawinan_options,value',
+            '78' => 'required_with:73|nullable|exists:pendidikan_formal_options,value',
+            '79' => 'required_with:73|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 6
+            '80' => 'nullable|string',
+            '81' => 'required_with:80|nullable|string',
+            '82' => 'required_with:80|nullable|integer|min:0',
+            '83' => 'required_with:80|nullable|exists:jenis_kelamin_options,value',
+            '84' => 'required_with:80|nullable|exists:status_perkawinan_options,value',
+            '85' => 'required_with:80|nullable|exists:pendidikan_formal_options,value',
+            '86' => 'required_with:80|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 7
+            '87' => 'nullable|string',
+            '88' => 'required_with:87|nullable|string',
+            '89' => 'required_with:87|nullable|integer|min:0',
+            '90' => 'required_with:87|nullable|exists:jenis_kelamin_options,value',
+            '91' => 'required_with:87|nullable|exists:status_perkawinan_options,value',
+            '92' => 'required_with:87|nullable|exists:pendidikan_formal_options,value',
+            '93' => 'required_with:87|nullable|exists:pendidikan_nonformal_options,value',
+            // Anggota 8
+            '94' => 'nullable|string',
+            '95' => 'required_with:94|nullable|string',
+            '96' => 'required_with:94|nullable|integer|min:0',
+            '97' => 'required_with:94|nullable|exists:jenis_kelamin_options,value',
+            '98' => 'required_with:94|nullable|exists:status_perkawinan_options,value',
+            '99' => 'required_with:94|nullable|exists:pendidikan_formal_options,value',
+            '100'=> 'required_with:94|nullable|exists:pendidikan_nonformal_options,value',
+            
             // --- Pengeluaran Rumah Tangga
             '171' => 'nullable|integer|min:0',
             '172' => 'nullable|integer|min:0',

@@ -15,10 +15,10 @@ class KarakteristikRumahTanggaSection extends Model
         'nama_anggota',
         'hubungan_kepala_keluarga',
         'usia',
-        'jenis_kelamin_option_id',
-        'status_perkawinan_option_id',
-        'pendidikan_formal_option_id',
-        'pendidikan_non_formal_option_id',
+        'jenis_kelamin_id',
+        'status_perkawinan_id',
+        'pendidikan_formal_id',
+        'pendidikan_non_id',
     ];
 
     // Kembali ke CibestForm (one-to-many)

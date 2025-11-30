@@ -7,6 +7,7 @@ use App\Models\BantuanKonsumtifSection;
 use App\Models\BantuanProduktifSection;
 use App\Models\BantuanZiswafSection;
 use App\Models\CibestForm;
+use App\Models\KarakteristikRumahTanggaSection;
 use App\Models\PembiayaanSyariahSection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -87,10 +88,19 @@ class CibestFormController extends Controller
             }
 
             $cibestForm = CibestForm::create([
-                ...Arr::except($row, 'bantuan_ziswaf_section', 'pembiayaan_syariah_section'),
+                ...Arr::except($row, 'bantuan_ziswaf_section', 'pembiayaan_syariah_section', 'karakteristik_rumah_tangga_section'),
                 'bantuan_ziswaf_section_id' => $bantuanZiswaf->id ?? null,
                 'user_id' => Auth::user()->id,
             ]);
+
+            if ($row['karakteristik_rumah_tangga_section']) {
+                foreach ($row['karakteristik_rumah_tangga_section'] as $member) {
+                    KarakteristikRumahTanggaSection::create([
+                        ...$member,
+                        'cibest_form_id' => $cibestForm->id
+                    ]);
+                }
+            }
         }
 
         return redirect()->back()->with('success', "Berhasil upload file {$file->getClientOriginalName()}");
