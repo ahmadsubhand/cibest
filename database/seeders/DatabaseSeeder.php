@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
-            AkadPembiayaanOptionSeeder::class,
+            AkadPembiayaanCheckboxSeeder::class,
             FrekuensiPendampinganOptionSeeder::class,
             JangkaWaktuOptionSeeder::class,
             JenisKelaminOptionSeeder::class,

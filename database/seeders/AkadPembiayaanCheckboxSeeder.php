@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\AkadPembiayaanOption;
+use App\Models\AkadPembiayaanCheckbox;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class AkadPembiayaanOptionSeeder extends Seeder
+class AkadPembiayaanCheckboxSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        AkadPembiayaanOption::factory()->createMany([
+        AkadPembiayaanCheckbox::factory()->createMany([
             ['value' => 'Murabahah', 'is_other' => false],
             ['value' => 'Mudharabah', 'is_other' => false],
             ['value' => 'Musyarakah', 'is_other' => false],

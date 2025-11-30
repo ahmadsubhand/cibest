@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class AkadPembiayaanOptionController extends Controller
+class AkadPembiayaanCheckboxController extends Controller
 {
     //
 }

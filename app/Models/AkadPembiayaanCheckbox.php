@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AkadPembiayaanOption extends Model
+class AkadPembiayaanCheckbox extends Model
 {
-    /** @use HasFactory<\Database\Factories\AkadPembiayaanOptionFactory> */
+    /** @use HasFactory<\Database\Factories\AkadPembiayaanCheckboxFactory> */
     use HasFactory;
     
     /**

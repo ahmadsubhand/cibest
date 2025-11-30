@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('akad_pembiayaan_options', function (Blueprint $table) {
+        Schema::create('akad_pembiayaan_checkboxes', function (Blueprint $table) {
             $table->id();
             $table->string('value')->unique();
             $table->boolean('is_other')->default(true);
@@ -20,7 +20,7 @@ return new class extends Migration
         Schema::create('akad_pembiayaan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pembiayaan_syariah_section_id')->constrained('pembiayaan_syariah_sections')->cascadeOnDelete();
-            $table->foreignId('akad_pembiayaan_option_id')->constrained('akad_pembiayaan_options')->cascadeOnDelete();
+            $table->foreignId('akad_pembiayaan_option_id')->constrained('akad_pembiayaan_checkboxes')->cascadeOnDelete();
         });
     }
 
