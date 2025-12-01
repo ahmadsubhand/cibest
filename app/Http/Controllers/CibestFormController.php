@@ -10,6 +10,7 @@ use App\Models\BantuanZiswafSection;
 use App\Models\CibestForm;
 use App\Models\KarakteristikRumahTanggaSection;
 use App\Models\PembiayaanSyariahSection;
+use App\Models\PembinaanPendampinganSection;
 use App\Models\PendapatanKetenagakerjaanSection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -94,14 +95,29 @@ class CibestFormController extends Controller
                 $pembiayaanSyariah->pembiayaanLainCheckboxes()->sync(Arr::get($row, 'pembiayaan_syariah_section.pembiayaan_lain_checkbox'));
             }
 
+            $pembinaanPendampingan = null;
+            if ($row['pembinaan_pendampingan_section']) {
+                // Main
+                $pembinaanPendampingan = PembinaanPendampinganSection::create([
+                    ...Arr::except($row['pembinaan_pendampingan_section'], 'jenis_pelatihan_checkbox', 'pelatihan_sangat_membantu_checkbox')
+                ]);
+
+                // Checkbox
+                $pembinaanPendampingan->jenisPelatihanCheckboxes()->sync(Arr::get($row, 'pembinaan_pendampingan_section.jenis_pelatihan_checkbox'));
+                $pembinaanPendampingan->pelatihanSangatMembantuCheckboxes()->sync(Arr::get($row, 'pembinaan_pendampingan_section.pelatihan_sangat_membantu_checkbox'));
+            }
+
             $cibestForm = CibestForm::create([
                 ...Arr::except($row, 
                     'bantuan_ziswaf_section', 
                     'pembiayaan_syariah_section', 
                     'karakteristik_rumah_tangga_section',
                     'pendapatan_ketenagakerjaan_section',
+                    'pembinaan_pendampingan_section',
                 ),
                 'bantuan_ziswaf_section_id' => $bantuanZiswaf->id ?? null,
+                'pembiayaan_syariah_section_id' => $pembiayaanSyariah->id ?? null,
+                'pembinaan_pendampingan_section_id' => $pembinaanPendampingan->id ?? null,
                 'user_id' => Auth::user()->id,
             ]);
 

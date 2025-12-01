@@ -3,9 +3,11 @@
 namespace App\Imports;
 
 use App\Models\AkadPembiayaanCheckbox;
+use App\Models\FrekuensiPendampinganOption;
 use App\Models\JangkaWaktuOption;
 use App\Models\JenisKelaminOption;
 use App\Models\JenisPekerjaanOption;
+use App\Models\JenisPelatihanCheckbox;
 use App\Models\KeteranganKebijakanPemerintahLikert;
 use App\Models\KeteranganLingkunganKeluargaLikert;
 use App\Models\KeteranganPuasaLikert;
@@ -13,6 +15,7 @@ use App\Models\KeteranganShalatLikert;
 use App\Models\KeteranganZakatInfakLikert;
 use App\Models\LembagaZiswafCheckbox;
 use App\Models\PembiayaanLainCheckbox;
+use App\Models\PembinaanPendampinganSection;
 use App\Models\PendidikanFormalOption;
 use App\Models\PendidikanNonformalOption;
 use App\Models\PenggunaanPembiayaanCheckbox;
@@ -245,7 +248,6 @@ class CibestImport extends BaseImport
             208 => "5. Pembinaan spiritual (pengajian/pertemuan rutin) sekurang-kurangnya 1x dalam satu (1) bulan",
             209 => "6. Pembinaan dan peningkatan kapasitas usaha sekurang-kurangnya 1x dalam enam (6) bulan",
             210 => "7. Pendampingan rutin (monitoring program) sekurang-kurangnya 1x dalam 1 bulan",
-
         ];
 
         return $map[$index] ?? null;
@@ -420,7 +422,17 @@ class CibestImport extends BaseImport
                 'lingkungan_keluarga_setelah'  => $this->getOptionId(KeteranganLingkunganKeluargaLikert::class, $row[202], 202),
                 'kebijakan_pemerintah_setelah' => $this->getOptionId(KeteranganKebijakanPemerintahLikert::class, $row[203], 203),
 
-                // // --- Pembinaan & Pendampingan ---
+                // --- Pembinaan & Pendampingan ---
+                'pembinaan_pendampingan_section' => $row[204] === 'Ya' ? 
+                    [
+                        'frekuensi_id' => $this->getOptionId(FrekuensiPendampinganOption::class, $row[205], 205),
+                        'jenis_pelatihan_checkbox' => $this->getCheckboxId(JenisPelatihanCheckbox::class, $row[206]),
+                        'pelatihan_sangat_membantu_checkbox' => $this->getCheckboxId(JenisPelatihanCheckbox::class, $row[207]),
+                        'pembinaan_spiritual' => ($row[208] ?? null) === "Ya",
+                        'pembinaan_usaha' => ($row[209] ?? null) === "Ya",
+                        'pendampingan_rutin' => ($row[210] ?? null) === "Ya",
+                    ]
+                    : null,
                 // 'pembinaan_pendampingan_section_id' => $row['1.  Apakah Anda pernah mendapatkan pendampingan, pelatihan, atau bimbingan selama menerima bantuan?'] ?? null,
             ];
         }
@@ -672,6 +684,15 @@ class CibestImport extends BaseImport
             '201' => 'required|exists:keterangan_zakat_infak_likerts,value',
             '202' => 'required|exists:keterangan_lingkungan_keluarga_likerts,value',
             '203' => 'required|exists:keterangan_kebijakan_pemerintah_likerts,value',
+
+            // --- Pembinaan & Pendampingan ---
+            '204' => 'required|in:Ya,Tidak',
+            '205' => 'required_if:204,Ya|nullable|exists:frekuensi_pendampingan_options,value',
+            '206' => 'required_if:204,Ya|nullable|string',
+            '207' => 'required_if:204,Ya|nullable|string',
+            '208' => 'required_if:204,Ya|nullable|in:Ya,Tidak',
+            '209' => 'required_if:204,Ya|nullable|in:Ya,Tidak',
+            '210' => 'required_if:204,Ya|nullable|in:Ya,Tidak',
         ];
     }
 }
