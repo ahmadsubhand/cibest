@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('nomor_kontak')->nullable();
             $table->text('alamat');
             // sementara string dulu untuk lokasi
-            $table->string('provinsi');
+            $table->foreignId('province_id')->constrained();
             $table->string('kabupaten_kota');
             $table->string('kecamatan');
             $table->string('desa_kelurahan');

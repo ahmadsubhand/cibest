@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             StatusPekerjaanOptionSeeder::class,
             StatusPerkawinanOptionSeeder::class,
             PenggunaanPembiayaanCheckboxSeeder::class,
+            ProvinceSeeder::class,
         ]);
     }
 }

@@ -17,12 +17,12 @@ use App\Models\PendidikanFormalOption;
 use App\Models\PendidikanNonformalOption;
 use App\Models\PenggunaanPembiayaanCheckbox;
 use App\Models\ProgramBantuanCheckbox;
+use App\Models\Province;
 use App\Models\StatusPekerjaanOption;
 use App\Models\StatusPerkawinanOption;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -32,6 +32,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
+use phpDocumentor\Reflection\Types\This;
 
 HeadingRowFormatter::default('none');
 
@@ -402,7 +403,7 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
                 'nama_responden'    => $row[4],
                 'nomor_kontak'      => $row[5] ?? null,
                 'alamat'            => $row[6],
-                'provinsi'          => $row[7],
+                'province_id'       => $this->getOptionId(Province::class, Str::headline($row[7]), 7),
                 'kabupaten_kota'    => $row[8],
                 'kecamatan'         => $row[9],
                 'desa_kelurahan'    => $row[10],
@@ -519,7 +520,7 @@ class CibestImport implements ToCollection, WithStartRow, WithValidation, SkipsO
             '4' => 'required|string',
             '5' => 'nullable|string',
             '6' => 'required|string',
-            '7' => 'required|string',
+            '7' => 'required|exists:provinces,value',
             '8' => 'required|string',
             '9' => 'required|string',
             '10' => 'required|string',

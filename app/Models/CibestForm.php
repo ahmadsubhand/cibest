@@ -19,7 +19,7 @@ class CibestForm extends Model
         'nama_responden',
         'nomor_kontak',
         'alamat',
-        'provinsi',
+        'province_id',
         'kabupaten_kota',
         'kecamatan',
         'desa_kelurahan',
