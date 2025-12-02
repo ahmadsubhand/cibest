@@ -183,19 +183,85 @@ class CibestFormController extends Controller
         }
 
         foreach ($import->data as $row) {
+            $bantuanZiswaf = null;
+            if ($row['bantuan_ziswaf_section']) {
+                // Section
+                $bantuanKonsumtifSection = BantuanKonsumtifSection::create(
+                    Arr::get($row, 'bantuan_ziswaf_section.bantuan_konsumtif_section')
+                );
+                $bantuanProduktifSection = BantuanProduktifSection::create(
+                    Arr::get($row, 'bantuan_ziswaf_section.bantuan_konsumtif_section')
+                );
+
+                // Main
+                $bantuanZiswaf = BantuanZiswafSection::create([
+                    ...Arr::except($row['bantuan_ziswaf_section'], 'lembaga_ziswaf_checkbox', 'program_bantuan_checkbox', 'pembiayaan_lain_checkbox'),
+                    'bantuan_konsumtif_section_id' => $bantuanKonsumtifSection->id,
+                    'bantuan_produktif_section_id' => $bantuanProduktifSection->id,
+                ]);
+
+                // Checkbox
+                $bantuanZiswaf->lembagaZiswafCheckboxes()->sync(Arr::get($row, 'bantuan_ziswaf_section.lembaga_ziswaf_checkbox'));
+                $bantuanZiswaf->programBantuanCheckboxes()->sync(Arr::get($row, 'bantuan_ziswaf_section.program_bantuan_checkbox'));
+                $bantuanZiswaf->pembiayaanLainCheckboxes()->sync(Arr::get($row, 'bantuan_ziswaf_section.pembiayaan_lain_checkbox'));
+            }
+
+            $pembiayaanSyariah = null;
+            if ($row['pembiayaan_syariah_section']) {
+                // Main
+                $pembiayaanSyariah = PembiayaanSyariahSection::create([
+                    ...Arr::except($row['pembiayaan_syariah_section'], 'akad_pembiayaan_checkbox', 'penggunaan_pembiayaan_checkbox', 'pembiayaan_lain_checkbox'),
+                ]);
+
+                // Checkbox
+                $pembiayaanSyariah->akadPembiayaanCheckboxes()->sync(Arr::get($row, 'pembiayaan_syariah_section.akad_pembiayaan_checkbox'));
+                $pembiayaanSyariah->penggunaanPembiayaanCheckboxes()->sync(Arr::get($row, 'pembiayaan_syariah_section.penggunaan_pembiayaan_checkbox'));
+                $pembiayaanSyariah->pembiayaanLainCheckboxes()->sync(Arr::get($row, 'pembiayaan_syariah_section.pembiayaan_lain_checkbox'));
+            }
+
+            $pembinaanPendampingan = null;
+            if ($row['pembinaan_pendampingan_section']) {
+                // Main
+                $pembinaanPendampingan = PembinaanPendampinganSection::create([
+                    ...Arr::except($row['pembinaan_pendampingan_section'], 'jenis_pelatihan_checkbox', 'pelatihan_sangat_membantu_checkbox')
+                ]);
+
+                // Checkbox
+                $pembinaanPendampingan->jenisPelatihanCheckboxes()->sync(Arr::get($row, 'pembinaan_pendampingan_section.jenis_pelatihan_checkbox'));
+                $pembinaanPendampingan->pelatihanSangatMembantuCheckboxes()->sync(Arr::get($row, 'pembinaan_pendampingan_section.pelatihan_sangat_membantu_checkbox'));
+            }
+
             $cibestForm = CibestForm::create([
-                ...Arr::except($row, 
-                    'bantuan_ziswaf_section', 
-                    'pembiayaan_syariah_section', 
+                ...Arr::except($row,
+                    'bantuan_ziswaf_section',
+                    'pembiayaan_syariah_section',
                     'karakteristik_rumah_tangga_section',
                     'pendapatan_ketenagakerjaan_section',
                     'pembinaan_pendampingan_section',
                 ),
-                // 'bantuan_ziswaf_section_id' => $bantuanZiswaf->id ?? null,
-                // 'pembiayaan_syariah_section_id' => $pembiayaanSyariah->id ?? null,
-                // 'pembinaan_pendampingan_section_id' => $pembinaanPendampingan->id ?? null,
+                'bantuan_ziswaf_section_id' => $bantuanZiswaf->id ?? null,
+                'pembiayaan_syariah_section_id' => $pembiayaanSyariah->id ?? null,
+                'pembinaan_pendampingan_section_id' => $pembinaanPendampingan->id ?? null,
                 'user_id' => Auth::user()->id,
             ]);
+
+            if ($row['karakteristik_rumah_tangga_section']) {
+                foreach ($row['karakteristik_rumah_tangga_section'] as $member) {
+                    KarakteristikRumahTanggaSection::create([
+                        ...$member,
+                        'cibest_form_id' => $cibestForm->id
+                    ]);
+                }
+            }
+
+            if ($row['pendapatan_ketenagakerjaan_section']) {
+                foreach ($row['pendapatan_ketenagakerjaan_section'] as $member) {
+                    PendapatanKetenagakerjaanSection::create([
+                        ...$member,
+                        'cibest_form_id' => $cibestForm->id
+                    ]);
+                }
+            }
         }
 
 

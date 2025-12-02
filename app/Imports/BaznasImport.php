@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\AkadPembiayaanCheckbox;
+use App\Models\FrekuensiPendampinganOption;
 use App\Models\JangkaWaktuOption;
 use App\Models\JenisKelaminOption;
 use App\Models\JenisPekerjaanOption;
@@ -274,10 +275,15 @@ class BaznasImport extends BaseImport
 
                 // --- Karakteristik Rumah Tangga --- (belum)
                 'karakteristik_rumah_tangga_section' => [
-                    'nama_anggota' => $row[13],
-                    'hubungan_kepala_keluarga' => 'Kepala Keluarga',
-                    'usia' => Carbon::now()->year - ($row[15] ?? Carbon::now()->year),
-                    'jenis_kelamin_id' => $this->getOptionId(JenisKelaminOption::class, $row[14] === 'P' ? 'Laki-laki' : 'Perempuan', 9),
+                    [
+                        'nama_anggota' => $row[13],
+                        'hubungan_kepala_keluarga' => 'Kepala Keluarga',
+                        'usia' => Carbon::now()->year - ($row[15] ?? Carbon::now()->year),
+                        'jenis_kelamin_id' => $this->getOptionId(JenisKelaminOption::class, $row[14] === 'P' ? 'Laki-laki' : 'Perempuan', 9),
+                        'status_perkawinan_id'     => $this->getOptionId(StatusPerkawinanOption::class, 'Tidak disebutkan', 9),
+                        'pendidikan_formal_id'     => $this->getOptionId(PendidikanFormalOption::class, 'Tidak disebutkan', 9),
+                        'pendidikan_non_id'  => $this->getOptionId(PendidikanNonformalOption::class, 'Tidak disebutkan', 9),
+                    ],
                 ],
 
                 // --- Pendapatan Ketenagakerjaan ---
@@ -327,6 +333,7 @@ class BaznasImport extends BaseImport
                 // --- Pembinaan & Pendampingan ---
                 'pembinaan_pendampingan_section' => ($row[37] === 'Ya') || ($row[38] === 'Ya') || ($row[39] === 'Ya') ? 
                     [
+                        'frekuensi_id' => $this->getOptionId(FrekuensiPendampinganOption::class, '1-2 kali', 37),
                         'pembinaan_spiritual' => ($row[37] ?? null) === "Ya",
                         'pembinaan_usaha' => ($row[38] ?? null) === "Ya",
                         'pendampingan_rutin' => ($row[39] ?? null) === "Ya",
