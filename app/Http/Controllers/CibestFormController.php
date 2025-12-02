@@ -140,7 +140,7 @@ class CibestFormController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', "Berhasil upload file {$file->getClientOriginalName()}");
+        return redirect()->back()->with('success', "Berhasil menambahkan data dari file \"{$file->getClientOriginalName()}\"");
     }
 
     public function baznasIndex()
@@ -265,6 +265,6 @@ class CibestFormController extends Controller
         }
 
 
-        return redirect()->back()->with('success', "Berhasil upload file {$file->getClientOriginalName()}");
+        return redirect()->back()->with('success', "Berhasil menambahkan data dari file \"{$file->getClientOriginalName()}\"");
     }
 }
