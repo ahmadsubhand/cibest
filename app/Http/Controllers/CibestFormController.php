@@ -12,6 +12,7 @@ use App\Models\KarakteristikRumahTanggaSection;
 use App\Models\PembiayaanSyariahSection;
 use App\Models\PembinaanPendampinganSection;
 use App\Models\PendapatanKetenagakerjaanSection;
+use App\Models\PovertyStandard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -138,6 +139,16 @@ class CibestFormController extends Controller
                     ]);
                 }
             }
+
+            // Hitung kuadran setelah semua data disimpan dan simpan ke pivot table
+            $quadrantResults = $this->hitungKuadran($cibestForm);
+
+            foreach ($quadrantResults as $quadrantResult) {
+                $cibestForm->cibestQuadrants()->attach($quadrantResult['poverty_standard_id'], [
+                    'kuadran_sebelum' => $quadrantResult['kuadran_sebelum'],
+                    'kuadran_setelah' => $quadrantResult['kuadran_setelah']
+                ]);
+            }
         }
 
         return redirect()->back()->with('success', "Berhasil menambahkan data dari file \"{$file->getClientOriginalName()}\"");
@@ -262,9 +273,128 @@ class CibestFormController extends Controller
                     ]);
                 }
             }
+
+            // Hitung kuadran setelah semua data disimpan dan simpan ke pivot table
+            $quadrantResults = $this->hitungKuadran($cibestForm);
+
+            foreach ($quadrantResults as $quadrantResult) {
+                $cibestForm->cibestQuadrants()->attach($quadrantResult['poverty_standard_id'], [
+                    'kuadran_sebelum' => $quadrantResult['kuadran_sebelum'],
+                    'kuadran_setelah' => $quadrantResult['kuadran_setelah']
+                ]);
+            }
         }
 
 
         return redirect()->back()->with('success', "Berhasil menambahkan data dari file \"{$file->getClientOriginalName()}\"");
+    }
+
+    /**
+     * Fungsi untuk menghitung kuadran berdasarkan pendapatan dan nilai spiritual
+     * untuk semua standar kemiskinan yang tersedia
+     *
+     * @param CibestForm $cibestForm
+     * @return array Array of quadrants data for each poverty standard
+     */
+    private function hitungKuadran(CibestForm $cibestForm)
+    {
+        // Ambil semua standar kemiskinan dari database
+        $povertyStandards = PovertyStandard::all();
+
+        // Hitung total pendapatan dari semua anggota rumah tangga
+        $totalPendapatanSebelum = 0;
+        $totalPendapatanSetelah = 0;
+        foreach ($cibestForm->pendapatanKetenagakerjaanSections as $pendapatan) {
+            $totalPendapatanSebelum += $pendapatan->total_pendapatan_sebelum;
+            $totalPendapatanSetelah += $pendapatan->total_pendapatan_setelah;
+        }
+
+        // Hitung rata-rata nilai spiritual sebelum
+        $nilai_spiritual_sebelum = [
+            $cibestForm->shalatSebelum->value,
+            $cibestForm->puasaSebelum->value,
+            $cibestForm->zakatInfakSebelum->value,
+            $cibestForm->lingkunganKeluargaSebelum->value,
+            $cibestForm->kebijakanPemerintahSebelum->value
+        ];
+
+        $total_nilai_sebelum = 0;
+        $jumlah_nilai_sebelum = 0;
+        foreach ($nilai_spiritual_sebelum as $nilai) {
+            $total_nilai_sebelum += $nilai;
+            $jumlah_nilai_sebelum++;
+        }
+
+        $rata_rata_spiritual_sebelum = $total_nilai_sebelum / $jumlah_nilai_sebelum;
+        $s_sebelum = ($rata_rata_spiritual_sebelum > 3) ? 1 : 0;
+
+        // Hitung rata-rata nilai spiritual setelah
+        $nilai_spiritual_setelah = [
+            $cibestForm->shalatSetelah->value,
+            $cibestForm->puasaSetelah->value,
+            $cibestForm->zakatInfakSetelah->value,
+            $cibestForm->lingkunganKeluargaSetelah->value,
+            $cibestForm->kebijakanPemerintahSetelah->value
+        ];
+
+        $total_nilai_setelah = 0;
+        $jumlah_nilai_setelah = 0;
+        foreach ($nilai_spiritual_setelah as $nilai) {
+            $total_nilai_setelah += $nilai;
+            $jumlah_nilai_setelah++;
+        }
+
+        $rata_rata_spiritual_setelah = $total_nilai_setelah / $jumlah_nilai_setelah;
+        $s_setelah = ($rata_rata_spiritual_setelah > 3) ? 1 : 0;
+
+        // Array untuk menyimpan hasil kuadran untuk setiap standar kemiskinan
+        $quadrantResults = [];
+
+        foreach ($povertyStandards as $povertyStandard) {
+            // Bandingkan pendapatan dengan nilai standar dari database
+            $m_sebelum = ($totalPendapatanSebelum > $povertyStandard->nilai_keluarga) ? 1 : 0;
+            $m_setelah = ($totalPendapatanSetelah > $povertyStandard->nilai_keluarga) ? 1 : 0;
+
+            // Petakan ke kuadran sebelum
+            $kuadran_sebelum = $this->tentukanKuadran($m_sebelum, $s_sebelum);
+
+            // Petakan ke kuadran setelah
+            $kuadran_setelah = $this->tentukanKuadran($m_setelah, $s_setelah);
+
+            $quadrantResults[] = [
+                'poverty_standard_id' => $povertyStandard->id,
+                'kuadran_sebelum' => $kuadran_sebelum,
+                'kuadran_setelah' => $kuadran_setelah
+            ];
+        }
+
+        return $quadrantResults;
+    }
+
+    /**
+     * Fungsi untuk menentukan kuadran berdasarkan M dan S
+     *
+     * @param int $m Material (pendapatan > standar kemiskinan = 1, else 0)
+     * @param int $s Spiritual (rata-rata spiritual > 3 = 1, else 0)
+     * @return int Kuadran (1-4)
+     */
+    private function tentukanKuadran($m, $s)
+    {
+        // Matriks kuadran:
+        // Material (M) | Spiritual (S) | Kuadran
+        //      1       |       1       |    1
+        //      0       |       1       |    2
+        //      1       |       0       |    3
+        //      0       |       0       |    4
+
+        if ($m == 1 && $s == 1) {
+            return 1;
+        } elseif ($m == 0 && $s == 1) {
+            return 2;
+        } elseif ($m == 1 && $s == 0) {
+            return 3;
+        } else { // $m == 0 && $s == 0
+            return 4;
+        }
     }
 }

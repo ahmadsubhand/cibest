@@ -19,6 +19,7 @@ class JenisPekerjaanOptionSeeder extends Seeder
             ['value' => 'Pedagang', 'is_other' => false],
             ['value' => 'Buruh', 'is_other' => false],
             ['value' => 'Nelayan', 'is_other' => false],
+            ['value' => 'Tidak disebutkan', 'is_other' => false]
         ]);
     }
 }

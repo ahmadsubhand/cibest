@@ -16,6 +16,7 @@ class StatusPekerjaanOptionSeeder extends Seeder
         StatusPekerjaanOption::factory()->createMany([
             ['value' => 'Bekerja'],
             ['value' => 'Tidak bekerja'],
+            ['value' => 'Tidak disebutkan'],
         ]);
     }
 }

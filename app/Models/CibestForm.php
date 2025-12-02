@@ -194,4 +194,9 @@ class CibestForm extends Model
     {
         return $this->belongsTo(KeteranganKebijakanPemerintahLikert::class, 'kebijakan_pemerintah_setelah');
     }
+
+    public function cibestQuadrants()
+    {
+        return $this->belongsToMany(PovertyStandard::class, 'cibest_quadrants', 'form_id', 'poverty_id');
+    }
 }

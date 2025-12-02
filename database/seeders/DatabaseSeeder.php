@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             StatusPerkawinanOptionSeeder::class,
             PenggunaanPembiayaanCheckboxSeeder::class,
             ProvinceSeeder::class,
+            PovertyStandardSeeder::class,
         ]);
     }
 }

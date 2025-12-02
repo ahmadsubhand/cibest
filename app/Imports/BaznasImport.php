@@ -287,7 +287,18 @@ class BaznasImport extends BaseImport
                 ],
 
                 // --- Pendapatan Ketenagakerjaan ---
-                'pendapatan_ketenagakerjaan_section' => [], // No equivalent structure in Baznas mapping
+                'pendapatan_ketenagakerjaan_section' => [
+                    [
+                        'nama_anggota' => $row[13],
+                        'status_id' => $this->getOptionId(StatusPekerjaanOption::class, 'Tidak disebutkan', 13),
+                        'jenis_id' => $this->getOptionId(JenisPekerjaanOption::class, 'Tidak disebutkan', 13),
+                        'rata_rata_pendapatan' => 0,
+                        'pendapatan_tidak_tetap' => 0,
+                        'pendapatan_aset' => 0,
+                        'total_pendapatan_sebelum' => $row[18] ?? 0,
+                        'total_pendapatan_setelah' => $row[19] ?? 0,
+                    ]
+                ], // No equivalent structure in Baznas mapping
 
                 // --- Pengeluaran Rumah Tangga ---
                 'pangan'            => $row[88] ?? 0,
@@ -360,6 +371,8 @@ class BaznasImport extends BaseImport
             '27' => 'required|string',
             '8' => 'required|integer|min:0',
             '9' => 'required|in:P,L',
+            '18' => 'required|integer|min:0',
+            '19' => 'required|integer|min:0',
 
             // --- Usaha dan Profit --- 
             '31' => 'required|in:Ya,Tidak',

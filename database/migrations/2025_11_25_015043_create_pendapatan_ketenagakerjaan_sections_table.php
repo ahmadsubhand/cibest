@@ -22,7 +22,8 @@ return new class extends Migration
             $table->bigInteger('rata_rata_pendapatan')->default(0);
             $table->bigInteger('pendapatan_tidak_tetap')->default(0);
             $table->bigInteger('pendapatan_aset')->default(0);
-            $table->bigInteger('total_pendapatan')->default(0);
+            $table->bigInteger('total_pendapatan_sebelum')->default(0);
+            $table->bigInteger('total_pendapatan_setelah')->default(0);
         });
     }
 

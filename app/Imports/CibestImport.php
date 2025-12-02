@@ -302,7 +302,8 @@ class CibestImport extends BaseImport
                 'rata_rata_pendapatan' => $row[$base + 3] ?? 0,
                 'pendapatan_tidak_tetap' => $row[$base + 4] ?? 0,
                 'pendapatan_aset' => $row[$base + 5] ?? 0,
-                'total_pendapatan' => $row[$base + 6] ?? 0,
+                'total_pendapatan_sebelum' => $row[$base + 6] ?? 0,
+                'total_pendapatan_setelah' => $row[$base + 6] ?? 0,
             ];
         }
 

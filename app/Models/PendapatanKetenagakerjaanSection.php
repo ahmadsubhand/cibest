@@ -18,7 +18,8 @@ class PendapatanKetenagakerjaanSection extends Model
         'rata_rata_pendapatan',
         'pendapatan_tidak_tetap',
         'pendapatan_aset',
-        'total_pendapatan',
+        'total_pendapatan_sebelum',
+        'total_pendapatan_setelah'
     ];
 
     // --- Kembali ke form induk
