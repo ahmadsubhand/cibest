@@ -53,3 +53,31 @@ interface QuadrantData {
     [key: number]: number;
   };
 }
+
+export interface PovertyStandard {
+  id: number;
+  name: string;
+  index_kesejahteraan_cibest: number | null;
+  besaran_nilai_cibest_model: number | null;
+  nilai_keluarga: number | null;
+  nilai_per_tahun: number | null;
+  log_natural: number | null;
+}
+
+export interface PovertyIndicator {
+  indicator: string;
+  before: number;
+  after: number;
+  change: number;
+}
+
+export interface Province {
+  id?: number;
+  name: string;
+  Q1: number;
+  Q2: number;
+  Q3: number;
+  Q4: number;
+  total: number;
+  dominant: string;
+}

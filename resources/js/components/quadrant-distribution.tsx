@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { QUADRANT_COLORS } from "@/data/cibest-data"
+import { QUADRANT_COLORS } from "@/lib/constants"
 import { QuadrantData } from "@/types"
 
 interface QuadrantDistributionProps {

@@ -1,6 +1,10 @@
-import { cibest } from "@/data/cibest-data"
+import { PovertyIndicator } from "@/types"
 
-export function IndicatorsTable() {
+interface IndicatorsTableProps {
+  povertyIndicators: PovertyIndicator[];
+}
+
+export function IndicatorsTable({ povertyIndicators }: IndicatorsTableProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">Indikator Kemiskinan</h2>
@@ -15,7 +19,7 @@ export function IndicatorsTable() {
             </tr>
           </thead>
           <tbody>
-            {cibest.povertyIndicators.map((item, idx) => (
+            {povertyIndicators.map((item, idx) => (
               <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                 <td className="px-4 py-3">{item.indicator}</td>
                 <td className="px-4 py-3 text-center">{item.before}</td>

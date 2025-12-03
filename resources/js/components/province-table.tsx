@@ -1,9 +1,14 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { cibest, QUADRANT_COLORS } from "@/data/cibest-data"
+import { QUADRANT_COLORS } from "@/lib/constants"
+import { Province } from "@/types"
 
-export function ProvinceTable() {
+interface ProvinceTableProps {
+  provinces: Province[];
+}
+
+export function ProvinceTable({ provinces }: ProvinceTableProps) {
   const [showModal, setShowModal] = useState(false)
 
   const getQuadrantColor = (quadrant: string) => {
@@ -40,8 +45,8 @@ export function ProvinceTable() {
               </tr>
             </thead>
             <tbody>
-              {cibest.provinces.slice(0, 6).map((province, idx) => (
-                <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+              {provinces.slice(0, 6).map((province, idx) => (
+                <tr key={province.id || idx} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3">{idx + 1}</td>
                   <td className="px-4 py-3">{province.name}</td>
                   <td className="px-4 py-3 text-center">{province.Q1}</td>
@@ -77,8 +82,8 @@ export function ProvinceTable() {
                 </tr>
               </thead>
               <tbody>
-                {cibest.provinces.map((province, idx) => (
-                  <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                {provinces.map((province, idx) => (
+                  <tr key={province.id || idx} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="px-4 py-3">{idx + 1}</td>
                     <td className="px-4 py-3">{province.name}</td>
                     <td className="px-4 py-3 text-center">{province.Q1}</td>
