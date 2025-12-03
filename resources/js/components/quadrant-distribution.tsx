@@ -31,13 +31,6 @@ export function QuadrantDistribution({ quadrantData }: QuadrantDistributionProps
 
   const currentStandard = data.length > 0 ? data[standard] : null;
 
-  const pieData = currentStandard ? [
-    { name: "Q1 Sejahtera", value: currentStandard.after[1] || 0, color: QUADRANT_COLORS.Q1 },
-    { name: "Q2 Material", value: currentStandard.after[2] || 0, color: QUADRANT_COLORS.Q2 },
-    { name: "Q3 Spiritual", value: currentStandard.after[3] || 0, color: QUADRANT_COLORS.Q3 },
-    { name: "Q4 Absolut", value: currentStandard.after[4] || 0, color: QUADRANT_COLORS.Q4 },
-  ] : [];
-
   const barData = currentStandard ? [
     {
       name: "Q1",
@@ -70,6 +63,13 @@ export function QuadrantDistribution({ quadrantData }: QuadrantDistributionProps
       : Object.values(currentStandard.before).reduce((sum, count) => sum + (count || 0), 0);
     return total > 0 ? Math.round((quadrantCount / total) * 100) : 0;
   };
+
+  const pieData = currentStandard ? [
+    { name: "Q1 Sejahtera", value: calculatePercentage(1), color: QUADRANT_COLORS.Q1 },
+    { name: "Q2 Material", value: calculatePercentage(2), color: QUADRANT_COLORS.Q2 },
+    { name: "Q3 Spiritual", value: calculatePercentage(3), color: QUADRANT_COLORS.Q3 },
+    { name: "Q4 Absolut", value: calculatePercentage(4), color: QUADRANT_COLORS.Q4 },
+  ] : []
 
   return (
     <>
