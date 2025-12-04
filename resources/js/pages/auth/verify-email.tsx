@@ -2,14 +2,15 @@
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
+import AuthWelcomeLayout from '@/layouts/auth-welcome-layout';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 import { Form, Head } from '@inertiajs/react';
+import { SharedData } from '@/types';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
-        <AuthLayout
+        <AuthWelcomeLayout
             title="Verify email"
             description="Please verify your email address by clicking on the link we just emailed to you."
         >
@@ -25,7 +26,10 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Form {...send.form()} className="space-y-6 text-center">
                 {({ processing }) => (
                     <>
-                        <Button disabled={processing} variant="secondary">
+                        <Button
+                            disabled={processing}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                        >
                             {processing && <Spinner />}
                             Resend verification email
                         </Button>
@@ -39,6 +43,6 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     </>
                 )}
             </Form>
-        </AuthLayout>
+        </AuthWelcomeLayout>
     );
 }

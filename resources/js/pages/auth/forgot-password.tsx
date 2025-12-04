@@ -3,19 +3,19 @@ import { login } from '@/routes';
 import { email } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
+import { SharedData } from '@/types';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import AuthWelcomeLayout from '@/layouts/auth-welcome-layout';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
-        <AuthLayout
+        <AuthWelcomeLayout
             title="Lupa kata sandi"
-            description="Masukkan email Anda untuk menerima tautan reset kata sandi"
         >
             <Head title="Lupa kata sandi" />
 
@@ -45,7 +45,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                             <div className="my-6 flex items-center justify-start">
                                 <Button
-                                    className="w-full"
+                                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
                                     disabled={processing}
                                     data-test="email-password-reset-link-button"
                                 >
@@ -64,6 +64,6 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     <TextLink href={login()}>masuk</TextLink>
                 </div>
             </div>
-        </AuthLayout>
+        </AuthWelcomeLayout>
     );
 }

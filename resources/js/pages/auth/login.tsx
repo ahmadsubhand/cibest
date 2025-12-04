@@ -5,11 +5,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
+import AuthWelcomeLayout from '@/layouts/auth-welcome-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
+import { SharedData } from '@/types';
 
 interface LoginProps {
     status?: string;
@@ -20,14 +21,20 @@ interface LoginProps {
 export default function Login({
     status,
     canResetPassword,
-    canRegister,
+    canRegister, // This is still used for showing the register link in the form content
 }: LoginProps) {
     return (
-        <AuthLayout
+        <AuthWelcomeLayout
             title="Masuk ke akun Anda"
             description="Masukkan email dan kata sandi Anda di bawah ini untuk masuk"
         >
             <Head title="Masuk" />
+
+            {status && (
+                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                    {status}
+                </div>
+            )}
 
             <Form
                 {...store.form()}
@@ -53,12 +60,12 @@ export default function Login({
                             </div>
 
                             <div className="grid gap-2">
-                                <div className="flex items-center">
+                                <div className="flex items-center justify-between">
                                     <Label htmlFor="password">Kata Sandi</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="text-sm"
                                             tabIndex={5}
                                         >
                                             Lupa kata sandi?
@@ -88,7 +95,7 @@ export default function Login({
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-white"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -109,12 +116,6 @@ export default function Login({
                     </>
                 )}
             </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
-        </AuthLayout>
+        </AuthWelcomeLayout>
     );
 }

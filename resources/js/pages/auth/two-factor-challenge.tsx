@@ -7,11 +7,12 @@ import {
     InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
-import AuthLayout from '@/layouts/auth-layout';
+import AuthWelcomeLayout from '@/layouts/auth-welcome-layout';
 import { store } from '@/routes/two-factor/login';
 import { Form, Head } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useMemo, useState } from 'react';
+import { SharedData } from '@/types';
 
 export default function TwoFactorChallenge() {
     const [showRecoveryInput, setShowRecoveryInput] = useState<boolean>(false);
@@ -46,7 +47,7 @@ export default function TwoFactorChallenge() {
     };
 
     return (
-        <AuthLayout
+        <AuthWelcomeLayout
             title={authConfigContent.title}
             description={authConfigContent.description}
         >
@@ -104,7 +105,7 @@ export default function TwoFactorChallenge() {
 
                             <Button
                                 type="submit"
-                                className="w-full"
+                                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
                                 disabled={processing}
                             >
                                 Continue
@@ -126,6 +127,6 @@ export default function TwoFactorChallenge() {
                     )}
                 </Form>
             </div>
-        </AuthLayout>
+        </AuthWelcomeLayout>
     );
 }
