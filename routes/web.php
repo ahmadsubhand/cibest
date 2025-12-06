@@ -33,7 +33,10 @@ Route::middleware(['auth', 'verified', 'admin.verified'])->group(function () {
         Route::get('import-jobs', 'getImportJobs')->name('import-jobs');
 
         // Route to get import job detail
-        Route::get('import-jobs/{importJob}', 'getImportJobDetail')->name('import-jobs.detail');
+        Route::get('import-jobs/{importJob}', 'getImportJobDetail')->name('import-jobs-detail');
+
+        // Route to delete import job
+        Route::delete('import-jobs/{importJob}', 'deleteImportJob')->name('import-jobs-destroy');
 
         Route::prefix('poverty-standards')->group(function () {
             Route::get('/', 'povertyStandardsIndex')->name('poverty-standards');

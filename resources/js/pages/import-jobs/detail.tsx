@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Clock, FileIcon, Play, CheckCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/table-error/data-table';
 import { columns } from '@/components/table-error/column';
 import { ImportJob } from '@/types/import-job';
+import { baznas, cibest } from '@/routes';
 
 export default function ImportJobDetail() {
   const { props } = usePage();
@@ -64,7 +65,7 @@ export default function ImportJobDetail() {
       <div className="flex h-full flex-col flex-1 gap-4 overflow-x-auto rounded-xl p-4 bg-gray-50">
         <div className="flex justify-between items-center">
           <h1 className='font-bold text-2xl text-teal-600'>Detail Import</h1>
-          <Button variant="outline" onClick={() => window.history.back()}>
+          <Button variant="outline" onClick={() => router.visit(importJob.type === 'baznas' ? baznas.url() : cibest.url())}>
             Kembali
           </Button>
         </div>

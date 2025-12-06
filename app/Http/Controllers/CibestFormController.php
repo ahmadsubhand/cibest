@@ -103,6 +103,19 @@ class CibestFormController extends Controller
         ]);
     }
 
+    public function deleteImportJob(ImportJob $importJob)
+    {
+        // Verify the import job belongs to the authenticated user
+        if ($importJob->user_id !== Auth::user()->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $filename = $importJob->filename;
+        $importJob->delete();
+
+        return redirect()->back()->with('success', "Berhasil menghapus import job untuk file {$filename}");
+    }
+
     public function povertyStandardsIndex()
     {
         $povertyStandards = PovertyStandard::orderBy('name')->get();

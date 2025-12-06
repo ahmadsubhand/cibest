@@ -41,6 +41,16 @@ export default function Cibest() {
   // Load import jobs on component mount
   useEffect(() => {
     loadImportJobs(setImportJobs);
+  }, [flash]);
+
+  useEffect(() => {
+    loadImportJobs(setImportJobs);
+
+    const interval = setInterval(() => {
+      loadImportJobs(setImportJobs);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
@@ -76,14 +86,6 @@ export default function Cibest() {
         setIsLoading(false);
         // Reload import jobs after upload
         loadImportJobs(setImportJobs);
-      },
-      onSuccess: () => {
-        if (flash?.success) {
-          toast.success(flash.success);
-        }
-      },
-      onError: () => {
-        toast.error('Gagal mengupload file');
       },
     });
   }
@@ -152,7 +154,7 @@ export default function Cibest() {
 }
 
  function loadImportJobs(setImportJobs: React.Dispatch<React.SetStateAction<ImportJob[]>>) {
-    axios.get(importLink.url(), { params: { type: 'cibest' } })
+    axios.get(importLink.url(), { params: { type: 'bprs' } })
       .then(response => {
         setImportJobs(response.data.data);
       })

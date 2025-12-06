@@ -41,6 +41,16 @@ export default function Baznas() {
   // Load import jobs on component mount
   useEffect(() => {
     loadImportJobs(setImportJobs);
+  }, [flash]);
+
+  useEffect(() => {
+    loadImportJobs(setImportJobs);
+
+    const interval = setInterval(() => {
+      loadImportJobs(setImportJobs);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
@@ -76,14 +86,6 @@ export default function Baznas() {
         setIsLoading(false);
         // Reload import jobs after upload
         loadImportJobs(setImportJobs);
-      },
-      onSuccess: () => {
-        if (flash?.success) {
-          toast.success(flash.success);
-        }
-      },
-      onError: () => {
-        toast.error('Gagal mengupload file');
       },
     });
   }
