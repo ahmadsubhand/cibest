@@ -39,7 +39,7 @@ class BaznasImportJob implements ShouldQueue
         $importJob = ImportJob::create([
             'job_id'       => $queueJobId,
             'type'         => FormType::BAZNAS->value,
-            'filename'     => basename($this->filePath),
+            'filename'     => $this->filePath,
             'user_id'      => $this->userId,
             'status'       => 'processing',
             'started_at'   => now(),
