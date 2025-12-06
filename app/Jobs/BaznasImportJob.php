@@ -47,16 +47,6 @@ class BaznasImportJob implements ShouldQueue
 
         try {
             // Check if file exists
-            if (!Storage::exists(Storage::path($this->filePath))) {
-                Log::error('File not found for Baznas import: ' . $this->filePath);
-                $importJob->update([
-                    'status' => 'failed',
-                    'errors' => ['File not found'],
-                    'completed_at' => now()
-                ]);
-                return;
-            }
-
             $tempPath = Storage::path($this->filePath);
             $import = new BaznasImport();
             $import->import($tempPath);
