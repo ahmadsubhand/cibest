@@ -39,7 +39,7 @@ class BaznasImportJob implements ShouldQueue
         $importJob = ImportJob::create([
             'job_id'       => $queueJobId,
             'type'         => FormType::BAZNAS->value,
-            'filename'     => $this->filePath,
+            'filename'     => basename($this->filePath),
             'user_id'      => $this->userId,
             'status'       => 'processing',
             'started_at'   => now(),
@@ -47,16 +47,6 @@ class BaznasImportJob implements ShouldQueue
 
         try {
             // Check if file exists
-            if (!Storage::exists($this->filePath)) {
-                Log::error('File not found for Baznas import: ' . $this->filePath);
-                $importJob->update([
-                    'status' => 'failed',
-                    'errors' => ['File not found'],
-                    'completed_at' => now()
-                ]);
-                return;
-            }
-
             $tempPath = Storage::path($this->filePath);
             $import = new BaznasImport();
             $import->import($tempPath);
