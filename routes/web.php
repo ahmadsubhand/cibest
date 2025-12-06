@@ -32,6 +32,9 @@ Route::middleware(['auth', 'verified', 'admin.verified'])->group(function () {
         // Route to get import job status
         Route::get('import-jobs', 'getImportJobs')->name('import-jobs');
 
+        // Route to get import job detail
+        Route::get('import-jobs/{importJob}', 'getImportJobDetail')->name('import-jobs.detail');
+
         Route::prefix('poverty-standards')->group(function () {
             Route::get('/', 'povertyStandardsIndex')->name('poverty-standards');
             Route::post('/', 'povertyStandardsStore')->name('poverty-standards-store');

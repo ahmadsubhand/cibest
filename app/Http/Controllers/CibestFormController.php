@@ -91,6 +91,18 @@ class CibestFormController extends Controller
         return response()->json($importJobs);
     }
 
+    public function getImportJobDetail(ImportJob $importJob)
+    {
+        // Verify the import job belongs to the authenticated user
+        if ($importJob->user_id !== Auth::user()->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        return Inertia::render('import-jobs/detail', [
+            'importJob' => $importJob,
+        ]);
+    }
+
     public function povertyStandardsIndex()
     {
         $povertyStandards = PovertyStandard::orderBy('name')->get();

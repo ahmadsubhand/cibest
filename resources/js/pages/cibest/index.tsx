@@ -1,15 +1,18 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { formatFileSize } from '@/lib/utils';
-import { cibest, cibestUpload } from '@/routes';
+import { cibest, cibestUpload, importJobs as importLink } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { FileIcon, HardDrive, Upload } from 'lucide-react';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState, useEffect } from 'react';
 import { DataTable } from '@/components/table-error/data-table';
 import { columns } from '@/components/table-error/column';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
+import ImportJobsTable from '@/components/import-jobs/import-jobs-table';
+import { ImportJob } from '@/types/import-job';
+import axios from 'axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -22,9 +25,11 @@ export default function Cibest() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [importJobs, setImportJobs] = useState<ImportJob[]>([]);
   const { flash } = usePage().props as {
     flash?: {
-      importError: {
+      success?: string;
+      importError?: {
         row: number;
         attribute: string;
         error: string;
@@ -32,6 +37,11 @@ export default function Cibest() {
       }[]
     };
   };
+
+  // Load import jobs on component mount
+  useEffect(() => {
+    loadImportJobs(setImportJobs);
+  }, []);
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     if (e.target.files) {
@@ -64,6 +74,16 @@ export default function Cibest() {
       },
       onFinish: () => {
         setIsLoading(false);
+        // Reload import jobs after upload
+        loadImportJobs(setImportJobs);
+      },
+      onSuccess: () => {
+        if (flash?.success) {
+          toast.success(flash.success);
+        }
+      },
+      onError: () => {
+        toast.error('Gagal mengupload file');
       },
     });
   }
@@ -114,8 +134,12 @@ export default function Cibest() {
           </Button>
         </div>
 
+        {/* Show import jobs list */}
+        <ImportJobsTable data={importJobs} type="cibest" />
+
+        {/* Show individual errors from flash if any */}
         {
-          flash?.importError && (
+          flash?.importError && flash.importError.length > 0 && (
             <div className="w-full h-fit flex flex-col gap-4 overflow-auto bg-white p-6 rounded-lg shadow-md">
               <p className='text-destructive font-semibold'><b>{flash.importError.length}</b> &nbsp; input tidak memenuhi standar data</p>
               <DataTable columns={columns} data={flash?.importError} />
@@ -126,3 +150,14 @@ export default function Cibest() {
     </AppLayout>
   );
 }
+
+ function loadImportJobs(setImportJobs: React.Dispatch<React.SetStateAction<ImportJob[]>>) {
+    axios.get(importLink.url(), { params: { type: 'cibest' } })
+      .then(response => {
+        setImportJobs(response.data.data);
+      })
+      .catch(error => {
+        console.error('Failed to load import jobs:', error);
+        toast.error('Gagal memuat riwayat import');
+      })
+  }
