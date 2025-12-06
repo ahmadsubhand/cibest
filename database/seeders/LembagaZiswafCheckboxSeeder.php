@@ -13,10 +13,17 @@ class LembagaZiswafCheckboxSeeder extends Seeder
      */
     public function run(): void
     {
-        LembagaZiswafCheckbox::factory()->createMany([
+        $options = [
             ['value' => 'BAZNAS Pusat', 'is_other' => false],
             ['value' => 'BAZNAS Provinsi/Daerah', 'is_other' => false],
             ['value' => 'LAZ', 'is_other' => false],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            LembagaZiswafCheckbox::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

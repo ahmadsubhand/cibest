@@ -13,7 +13,7 @@ class JenisPelatihanCheckboxSeeder extends Seeder
      */
     public function run(): void
     {
-        JenisPelatihanCheckbox::factory()->createMany([
+        $options = [
             ['value' => 'Pelatihan kewirausahaan', 'is_other' => false],
             ['value' => 'Perencanaan keuangan', 'is_other' => false],
             ['value' => 'Keuangan dan akuntansi sederhana', 'is_other' => false],
@@ -21,6 +21,13 @@ class JenisPelatihanCheckboxSeeder extends Seeder
             ['value' => 'Pemasaran digital dan e-commerce', 'is_other' => false],
             ['value' => 'Pelatihan inovasi produk & desain kemasan', 'is_other' => false],
             ['value' => 'Keterampilan teknis (produksi, kerajinan, pertanian, peternakan, dsb.)', 'is_other' => false],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            JenisPelatihanCheckbox::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

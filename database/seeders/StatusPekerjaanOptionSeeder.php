@@ -13,10 +13,17 @@ class StatusPekerjaanOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        StatusPekerjaanOption::factory()->createMany([
+        $options = [
             ['value' => 'Bekerja'],
             ['value' => 'Tidak bekerja'],
             ['value' => 'Tidak disebutkan'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            StatusPekerjaanOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

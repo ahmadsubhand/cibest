@@ -14,11 +14,15 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->makeAdmin()->create([
-            'email' => env('ADMIN_EMAIL'),
-            'password' => Hash::make(env('ADMIN_PASSWORD')),
-            'name' => 'Super Admin',
-            'admin_verification_status' => 'verified',
-        ]);
+        $adminEmail = env('ADMIN_EMAIL', 'admin@example.com');
+
+        User::updateOrCreate(
+            ['email' => $adminEmail], // unique key to find the record
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'password')),
+                'admin_verification_status' => 'verified',
+            ]
+        );
     }
 }

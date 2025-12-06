@@ -13,7 +13,7 @@ class PendidikanFormalOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        PendidikanFormalOption::factory()->createMany([
+        $options = [
             ['value' => 'Tidak Bersekolah'],
             ['value' => 'SD/SDLB/Paket A'],
             ['value' => 'Madrasah Ibtidaiyah'],
@@ -23,6 +23,13 @@ class PendidikanFormalOptionSeeder extends Seeder
             ['value' => 'Madrasah Aliyah'],
             ['value' => 'Perguruan tinggi (D1/D2/D3/S1)'],
             ['value' => 'Tidak disebutkan'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            PendidikanFormalOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

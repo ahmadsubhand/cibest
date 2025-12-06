@@ -13,12 +13,19 @@ class KeteranganZakatInfakLikertSeeder extends Seeder
      */
     public function run(): void
     {
-        KeteranganZakatInfakLikert::factory()->createMany([
+        $options = [
             ['value' => '1', 'description' => 'Melarang orang lain berzakat dan infak'],
             ['value' => '2', 'description' => 'Menolak zakat dan infak'],
             ['value' => '3', 'description' => 'Tidak pernah berinfak walau sekali dalam setahun'],
             ['value' => '4', 'description' => 'Membayar zakat fitrah dan/atau zakat harta (mal)/hanya melakukan infak sesekali'],
             ['value' => '5', 'description' => 'Membayar zakat fitrah, zakat harta, dan infak/sedekah'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            KeteranganZakatInfakLikert::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

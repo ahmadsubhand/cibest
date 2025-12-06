@@ -13,12 +13,19 @@ class JangkaWaktuOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        JangkaWaktuOption::factory()->createMany([
+        $options = [
             ['value' => 'Kurang dari 6 bulan', 'is_other' => false],
             ['value' => '6 bulan', 'is_other' => false],
             ['value' => '1 tahun', 'is_other' => false],
             ['value' => '2 tahun', 'is_other' => false],
             ['value' => '3 tahun', 'is_other' => false],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            JangkaWaktuOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

@@ -13,11 +13,18 @@ class FrekuensiPendampinganOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        FrekuensiPendampinganOption::factory()->createMany([
+        $options = [
             ['value' => '1-2 kali'],
             ['value' => '3-5 kali'],
             ['value' => '6-10 kali'],
             ['value' => '> 10 kali'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            FrekuensiPendampinganOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

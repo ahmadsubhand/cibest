@@ -13,7 +13,7 @@ class ProvinceSeeder extends Seeder
      */
     public function run(): void
     {
-        Province::factory()->createMany([
+        $provinces = [
             ['value' => 'Nanggroe Aceh Darussalam'],
             ['value' => 'Sumatera Utara'],
             ['value' => 'Sumatera Selatan'],
@@ -52,6 +52,13 @@ class ProvinceSeeder extends Seeder
             ['value' => 'Papua Pegunungan'],
             ['value' => 'Papua Selatan'],
             ['value' => 'Papua Barat Daya'],
-        ]);
+        ];
+
+        foreach ($provinces as $province) {
+            Province::updateOrCreate(
+                ['value' => $province['value']], // unique key to find the record
+                $province
+            );
+        }
     }
 }

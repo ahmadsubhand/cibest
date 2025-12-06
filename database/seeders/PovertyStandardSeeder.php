@@ -13,7 +13,7 @@ class PovertyStandardSeeder extends Seeder
      */
     public function run(): void
     {
-        PovertyStandard::factory()->createMany([
+        $standards = [
             [
                 'name' => 'Miskin Ekstrem',
                 'nilai_keluarga' => 1657717,
@@ -44,6 +44,13 @@ class PovertyStandardSeeder extends Seeder
                 'nilai_per_tahun' => 81945672,
                 'log_natural' => 18.22156705,
             ],
-        ]);
+        ];
+
+        foreach ($standards as $standard) {
+            PovertyStandard::updateOrCreate(
+                ['name' => $standard['name']], // unique key to find the record
+                $standard
+            );
+        }
     }
 }

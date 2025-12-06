@@ -13,7 +13,7 @@ class ProgramBantuanCheckboxSeeder extends Seeder
      */
     public function run(): void
     {
-        ProgramBantuanCheckbox::factory()->createMany([
+        $options = [
             ['value' => 'Zakat Community Development (ZCD)', 'is_other' => false],
             ['value' => 'BAZNAS Micro Finance (BMFi)', 'is_other' => false],
             ['value' => 'Lembaga Pemberdayaan Ekonomi Mustahik (LPEM)', 'is_other' => false],
@@ -25,6 +25,13 @@ class ProgramBantuanCheckboxSeeder extends Seeder
             ['value' => 'Rumah Sehat BAZNAS (RSB)', 'is_other' => false],
             ['value' => 'Layanan Publik', 'is_other' => false],
             ['value' => 'Lembaga Pemberdayaan Peternak Mustahik (LPPM)', 'is_other' => false],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            ProgramBantuanCheckbox::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

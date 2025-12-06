@@ -13,12 +13,19 @@ class KeteranganShalatLikertSeeder extends Seeder
      */
     public function run(): void
     {
-        KeteranganShalatLikert::factory()->createMany([
+        $options = [
             ['value' => '1', 'description' => 'Melarang orang lain shalat'],
             ['value' => '2', 'description' => 'Menolak konsep shalat'],
             ['value' => '3', 'description' => 'Melaksanakan shalat wajib tidak rutin'],
             ['value' => '4', 'description' => 'Melaksanakan shalat rutin wajib tapi tidak selalu berjamaah'],
             ['value' => '5', 'description' => 'Melaksanakan shalat wajib rutin berjamaah dan melakukan shalat sunnah'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            KeteranganShalatLikert::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

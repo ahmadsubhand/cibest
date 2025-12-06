@@ -13,11 +13,18 @@ class PembiayaanLainCheckboxSeeder extends Seeder
      */
     public function run(): void
     {
-        PembiayaanLainCheckbox::factory()->createMany([
+        $options = [
             ['value' => 'Pinjaman keluarga/kerabat/teman', 'is_other' => false],
             ['value' => 'Kredit (bank konvensional/BPR/Koperasi)', 'is_other' => false],
             ['value' => 'Pinjaman rentenir/bank keliling/bank emok', 'is_other' => false],
             ['value' => 'Bantuan pemerintah', 'is_other' => false],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            PembiayaanLainCheckbox::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

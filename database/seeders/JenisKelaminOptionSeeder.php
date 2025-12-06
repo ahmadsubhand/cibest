@@ -13,9 +13,16 @@ class JenisKelaminOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        JenisKelaminOption::factory()->createMany([
+        $options = [
             ['value' => 'Laki-laki'],
             ['value' => 'Perempuan'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            JenisKelaminOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

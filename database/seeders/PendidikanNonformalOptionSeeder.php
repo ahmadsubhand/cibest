@@ -13,10 +13,17 @@ class PendidikanNonformalOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        PendidikanNonformalOption::factory()->createMany([
+        $options = [
             ['value' => 'Pernah mengikuti (ada sertifikat)'],
             ['value' => 'Tidak pernah mengikuti'],
             ['value' => 'Tidak disebutkan'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            PendidikanNonformalOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

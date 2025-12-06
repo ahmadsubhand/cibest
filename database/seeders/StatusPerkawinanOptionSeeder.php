@@ -13,12 +13,19 @@ class StatusPerkawinanOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        StatusPerkawinanOption::factory()->createMany([
+        $options = [
             ['value' => 'Kawin'],
             ['value' => 'Belum kawin'],
             ['value' => 'Cerai mati'],
             ['value' => 'Cerai hidup'],
             ['value' => 'Tidak disebutkan'],
-        ]);
+        ];
+
+        foreach ($options as $option) {
+            StatusPerkawinanOption::updateOrCreate(
+                ['value' => $option['value']], // unique key to find the record
+                $option
+            );
+        }
     }
 }

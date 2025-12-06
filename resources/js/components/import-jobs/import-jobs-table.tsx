@@ -3,7 +3,7 @@ import { DataTable } from '@/components/table-error/data-table';
 import { ImportJob } from '@/types/import-job';
 import { ColumnDef } from '@tanstack/react-table';
 import { router } from '@inertiajs/react';
-import { Clock, Play, CheckCircle, AlertCircle, MoreHorizontal, Trash2, Eye } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, MoreHorizontal, Trash2, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
